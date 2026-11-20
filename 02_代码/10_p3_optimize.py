@@ -37,7 +37,7 @@ def make_eval(case):
 lines = ["P3 NSGA-II（pop=100, gen=80）",
          "目标 max Q_o / min C_total。粗筛使用固定流度估算的 q_max。",
          "附件 C 仅训练档标定。τ_inj=0；等待期闭合效应待接入。",
-         "V/f 移植指数为 0.2/0.1，产水采用 WOR=0.5。NPV 为绝对值，B1 待校准。"]
+         "V/f 指数按 T31 标定取 0（a=-0.014, b=0.001），产水采用 WOR=0.5。NPV 为绝对值，B1 待校准。"]
 fronts = {}
 
 for case in (1, 2, 3):

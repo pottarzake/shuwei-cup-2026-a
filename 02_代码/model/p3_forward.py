@@ -3,7 +3,8 @@
 P3 快速评估器：数据标定的焖井/浓度维度 + 机理/假设的 V、f 缩放。
 
 基准产量来自 T22 的初始瞬时油率与 L_d(ts) 拟合（附件 C 标定）。
-V、f 的指数是待验证假设，默认 0.2 / 0.1，可调并在论文中说明。
+V、f 的指数由 11_calibrate_vf.py 标定为约 0（a=-0.014, b=0.001），
+默认取 0：注入量与配比只影响成本，不影响本模型的产量。
 """
 
 from pathlib import Path
@@ -43,7 +44,7 @@ def _sat(t, a, b, c):
     return a + b * (1.0 - np.exp(-t / c))
 
 
-def evaluate(case, cn, q, V, f, ts, tau, exp_v=0.2, exp_f=0.1, wor=0.5,
+def evaluate(case, cn, q, V, f, ts, tau, exp_v=0.0, exp_f=0.0, wor=0.5,
              k_r=1.0, phi_r=1.0, sh_r=1.0):
     area, phi, movable, qmax0 = CASE[case]
     qmax = qmax0 * k_r / (sh_r ** 0.5)
