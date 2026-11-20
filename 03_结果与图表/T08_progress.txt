@@ -1,9 +1,0 @@
-injection done at 10.00 d
-ts= 1.0 d: R_num= 18.07, R_ana= 18.42, dp_face=3.531 MPa
-ts= 2.0 d: R_num= 14.82, R_ana= 13.68, dp_face=2.973 MPa
-ts= 5.0 d: R_num=  0.00, R_ana=  0.00, dp_face=1.935 MPa
-ts=10.0 d: R_num=  0.00, R_ana=  0.00, dp_face=0.973 MPa
-ts=20.0 d: R_num=  0.00, R_ana=  0.00, dp_face=0.242 MPa
-ts=30.0 d: R_num=  0.00, R_ana=  0.00, dp_face=0.055 MPa
-ts=45.0 d: R_num=  0.00, R_ana=  0.00, dp_face=-0.000 MPa
-ts=60.0 d: R_num=  0.00, R_ana=  0.00, dp_face=-0.007 MPa
