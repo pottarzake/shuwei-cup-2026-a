@@ -1,0 +1,7 @@
+q=800.0, t_inj=3.75: p_face=56.14, A=8.14 MPa, a=15.5 m
+  ts=1: R_num=24.12, R_ana=24.23, dp_face=5.313
+  ts=2: R_num=23.62, R_ana=25.50, dp_face=4.358
+  ts=5: R_num=13.31, R_ana=14.43, dp_face=2.796
+  ts=10: R_num=0.00, R_ana=0.00, dp_face=1.406
+  ts=20: R_num=0.00, R_ana=0.00, dp_face=0.353
+  ts=30: R_num=0.00, R_ana=0.00, dp_face=0.083
