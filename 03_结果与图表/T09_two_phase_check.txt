@@ -1,0 +1,27 @@
+Case0, L=40 m, n=200, fw_inj=0.5
+v_inj = 3.6169e-07 m/s, q_inj = 300.0 m3/d
+p_max = 57.0 MPa, p0 = 45.0 MPa
+total mobility at Sw0 = 3.438e-14 m2/(Pa s)
+feasible q at dp=12 MPa (oil-water) = 8.55 m3/d
+same with CO2 mobility only       = 491.2 m3/d
+NOTE: 油水两相不含低黏度 CO2 相，注入能力被低估；P3 的压力约束会大量绑定，Q2 需重新评估自由相。
+t=0.01 d: p0=49.805 MPa, peak p=49.805 MPa, Sw0=0.26402, Sw_max=0.26402
+t=0.05 d: p0=56.720 MPa, peak p=56.720 MPa, Sw0=0.31897, Sw_max=0.31897
+t=0.10 d: p0=62.025 MPa, peak p=62.025 MPa, Sw0=0.37114, Sw_max=0.37114
+t=0.20 d: p0=69.688 MPa, peak p=69.688 MPa, Sw0=0.42211, Sw_max=0.42211
+mass balance:
+  water_in: 3.148565e+00
+  water_out: 0.000000e+00
+  water_stored: 1.002283e+03
+  water_initial: 9.991340e+02
+  water_residual: 7.821654e-11
+  oil_in: 2.540263e+00
+  oil_out: 0.000000e+00
+  oil_stored: 2.402540e+03
+  oil_initial: 2.400000e+03
+  oil_residual: -1.027729e-10
+water rel residual = 2.484e-11
+oil   rel residual = 4.046e-11
+max Newton iterations = 2
+peak p <= p_max: FAIL
+mass balance < 1e-6: PASS
