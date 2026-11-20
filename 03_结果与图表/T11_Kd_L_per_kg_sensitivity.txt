@@ -1,0 +1,4 @@
+Kd=2e-05 m3/kg (= 0.02 L/kg): C_face=3.378e-03, r(0.01wt%)=0.61 m, r(1e-5)=1.02 m, ads_frac=0.412, rel_res=2.8e-15
+Kd=1e-05 m3/kg (= 0.01 L/kg): C_face=4.025e-03, r(0.01wt%)=0.61 m, r(1e-5)=1.02 m, ads_frac=0.275, rel_res=0.0e+00
+Kd=5e-06 m3/kg (= 0.005 L/kg): C_face=4.502e-03, r(0.01wt%)=0.61 m, r(1e-5)=1.02 m, ads_frac=0.166, rel_res=2.8e-16
+elapsed=149s
