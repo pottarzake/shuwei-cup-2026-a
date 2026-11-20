@@ -1,0 +1,46 @@
+% 04_p2_dimensional.tex —— P2 无量纲化与解析关系（你负责；T08 是前置）
+\section{Problem 2: Dimensional Analysis and the $R(t_s)$ Relation}
+
+\subsection{Scaling}
+[TBD: 特征尺度选取与无量纲变量定义
+$x_D=x/L_c$, $t_D=t/t_s$, $p_D=(p-p_0)/(p_{inj}-p_0)$,
+$C_D=C_n/C_{n,inj}$。]
+
+\subsection{Dimensionless Groups}
+% 表已按总纲 v0.4 §4.2 预填；量级列在跑完基准情景后更新
+\begin{table}[h!t]
+\centering
+\caption{Dimensionless controlling groups (magnitudes for the Case-0 baseline).}
+\label{tbl:pi_groups}
+\small
+\begin{tabular}{clll}
+\toprule[1.5pt]
+Group & Definition & Physical meaning & Magnitude\\
+\midrule[1pt]
+$\Pi_0$ & $R/\sqrt{D_0 t_s}$ & dimensionless stimulation radius & [TBD]\\
+$P$ & $(p_{inj}-p_0)/p_0$ & injection intensity & 0.27\\
+$\Gamma$ & $\gamma_k p_0$ & stress-sensitivity strength & 2.25\\
+$C_\phi$ & $c_\phi p_0$ & pressure sensitivity of porosity & 0.27\\
+$\Lambda$ & $\alpha(p_{inj}-p_0)/\sigma_h$ & Biot coupling strength & 0.18\\
+$\Delta_d$ & $\beta_d \varepsilon_d$ & damage-initiation strength & 0.5\\
+$K_a$ & $(1-\phi)\rho_r K_d/(\phi S_w)$ & adsorption vs mobile aqueous inventory & [TBD]\\
+$A_\sigma$ & $a_\sigma C_{n,inj}$ & IFT-reduction amplitude & 0.3\\
+$A_\theta$ & $a_\theta C_{n,inj}$ (rad) & contact-angle change amplitude & 0.26\\
+$Pe$ & $vL/D$ & advection--diffusion ratio & [TBD]\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+\subsection{Approximate Analytical Relation $R(t_s)$}
+[TBD: 镜像热核解（总纲 4.3）：
+$p-p_0 \approx \frac{A}{2}\left[\operatorname{erf}\frac{a+x}{2\sqrt{Dt_s}}+
+\operatorname{erf}\frac{a-x}{2\sqrt{Dt_s}}\right]$；
+阈值 $0.05p_0$ 取最远非负根；$R=0$ 的处理；
+定压阶跃对照 $R=2\sqrt{Dt}\,\mathrm{erfc}^{-1}(0.05p_0/(p_{inj}-p_0))$（引 P2-01）；
+与正演器剖面对比误差 <10\%。]
+
+\subsection{Sensitivity of $R(t_s)$ to Dimensionless Groups}
+[TBD: 数值实验（固定其余参数扫 $\Gamma, P$ 等，热力图）；
+讨论哪几个群显著改变 $t_s \to R$ 关系（总纲 4.5 预判：$\Gamma, P$ 强，$C_\phi, \Lambda, \Delta_d$ 中）。
+亮点讨论（总纲 3.1 文献映射）：压力改造半径 vs 物质波及半径差 1--2 个数量级；
+焖井时间"符号之争"源于时间窗口定义，P1-03 的负相关是固定总时长窗口的产物。]

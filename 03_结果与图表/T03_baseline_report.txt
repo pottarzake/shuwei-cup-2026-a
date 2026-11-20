@@ -1,0 +1,27 @@
+T03 数据划分与基线  (2026-11-20)
+============================================================
+原始数据: 38880 行 × 8 列; null=0, 完全重复行=0
+总组数: 108  (3 case × 3 cn × 12 ts)
+划分组数: {'train': 72, 'test_interp': 18, 'val': 9, 'test_extrap': 9}
+无 (case,cn,ts) 重叠: True
+组数符合 72/9/18+9: True
+
+常数预测器（分情景训练均值）:
+  Case1: 260.1 m3
+  Case2: 1183.3 m3
+  Case3: 3039.4 m3
+  全局均值: 1494.3 m3
+
+基线评估（目标 Q360, 单位 m3）:
+      split  model  n   rmse  mape_pct
+        val  const  9 355.67     12.86
+        val    lin  9 401.54     74.38
+        val loglin  9 235.77     28.88
+test_interp  const 18 256.85      8.80
+test_interp    lin 18 222.83     42.44
+test_interp loglin 18 169.93     22.74
+test_extrap  const  9 357.78     12.82
+test_extrap    lin  9 488.30     89.76
+test_extrap loglin  9 239.44     27.09
+
+说明: test_interp = t_s∈{15,45} 区间内留档; test_extrap = t_s=60 外推; loglin 为含 log(ts) 的线性参考变体。

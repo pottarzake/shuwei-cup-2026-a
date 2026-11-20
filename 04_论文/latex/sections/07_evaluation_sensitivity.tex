@@ -1,0 +1,49 @@
+% 07_evaluation_sensitivity.tex —— 综合评价指标体系 + Sobol 全局敏感性（队友）
+\section{Comprehensive Evaluation and Global Sensitivity}
+
+\subsection{Evaluation Indicator System}
+To rank stimulation strategies beyond a single objective, we define seven
+indicators, each with a clear unit and direction (Table~\ref{tbl:indicators}).
+Indicators are min--max normalized so that larger is always better, and the
+radar chart (Figure~\ref{fig:radar}) compares the three scenarios at their
+economically optimal soak time. Case~3 dominates all axes; Case~2 shows
+decent productivity but weak economics; Case~1 trails everywhere, consistent
+with the economic analysis of Section~6. The stimulation radius $R(t_s^*)$
+(from Section~4) and the robustness margin (from Section~5) plug into the
+same framework as additional axes.
+
+% 数值表定稿时从 03_结果与图表/T26_indicator_table.csv 誊入
+\begin{table}[h!t]
+\centering
+\caption{Comprehensive evaluation indicators (larger is better after
+normalization; evaluated at each scenario's economic optimum, $C_n=1.0$ wt\%).}
+\label{tbl:indicators}
+\small
+\begin{tabular}{clccc}
+\toprule[1.5pt]
+No. & Indicator (unit) & Case1 & Case2 & Case3\\
+\midrule[1pt]
+I1 & $Q_{360}$ (m$^3$)                  & 223   & 1236  & 3512\\
+I2 & NPV ($10^4$ CNY)                  & $-721$ & $-449$ & 179\\
+I3 & Unit cost (10$^4$ CNY/m$^3$)      & 3.57  & 0.70  & 0.28\\
+I4 & Soak gain $Q_{360}(t_s^*)/Q_{360}(5\,\mathrm{d})$ (-)
+                                       & 1.45  & 2.03  & 2.46\\
+I5 & Nano marginal gain (m$^3$/wt\%)  & 21    & 108   & 320\\
+I6 & Breakeven margin $P^*/P_{be}$ (-) & 0.09  & 0.48  & 1.18\\
+I7 & Test MAPE (\%)                    & 3.15  & 1.53  & 1.33\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+\subsection{Nested Sobol Sensitivity Analysis}
+[TBD T35: Saltelli sampling ($N = 1024$); outer loop samples all key
+geological/engineering parameters except $t_s$; for each outer sample the
+inner loop scans $t_s$ and records the NPV-maximizing $t_s^*$; report the
+total-effect Sobol indices of $Q_{360}$ and $t_s^*$, identify the top-3
+parameters controlling $t_s^*$, and compare the ranking with the reference
+study \cite{p4-04} (injected volume $>$ capillary-pressure multiplier
+$>$ matrix permeability $>$ $\dots$). Consistency corroborates the
+mechanistic model; deviations are explained by the additional nano and
+CO$_2$ variables in our design. Methodology follows \cite{p4-02}.]
+
+% 图表：fig:radar → T26_radar.png（T37 统一编号定稿）

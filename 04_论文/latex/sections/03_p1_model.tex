@@ -1,0 +1,33 @@
+% 03_p1_model.tex —— P1 三场耦合模型（你负责；T27 初稿 11/22 晚）
+\section{Problem 1: Coupled Flow--Stress--Damage Model}
+
+% 写作要求（总纲铁律）：
+%  - 每个符号先定义再用；P2/P3/P4 引用的方程在此编号
+%  - 明确区分注入/焖井/生产三阶段的边界条件（题目硬性要求）
+%  - 物理假设引文献见 02 节注释
+\subsection{Conceptual Model and 1D Geometry}
+[TBD: 裂缝面法向一维的降维决策与理由（总纲 §3.1）；$x\in[0,L]$，$L=40$ m 基准；
+$N_f$ 条裂缝，有效面积 $N_f\cdot 4L_fh_f$。]
+
+\subsection{Flow Equations}
+[TBD: 多相达西流 + 组分输运（CO$_2$ 溶解亨利定律、纳米对流-扩散-吸附）；
+边界按总纲 3.7：注入按配液比例施加组分通量；远场流入取初始组分，
+流出取出流通量。质量守恒验证结果放此处或附录。]
+
+\subsection{Poroelastic Stress Field}
+[TBD: 一维增量本构（相对初始状态），$\sigma'_{xx}=\sigma_h-\alpha(p-p_0)$，
+$u_x(L)=0$；固定应力分裂耦合格式（引 P1-09）。]
+
+\subsection{Damage Evolution}
+[TBD: 压缩应变历史 $\kappa=\max\langle-\varepsilon_{xx}\rangle_+$；
+$d=1-\exp[-\beta_d\langle\kappa-\varepsilon_d\rangle_+]$；
+$E=E_0(1-d)$、$k_m=k_{m0}(1-d)^3$、
+$\phi=\phi_0[1+c_\phi(p-p_0)](1-\lambda_d d)$。引 P1-10/P1-12。]
+
+\subsection{Boundary Conditions by Stage and Numerical Implementation}
+[TBD: 表格列出三阶段（注入/焖井/生产）每类边界；
+向后 Euler + 全隐式 Newton；网格 400 单元几何加密；验证摘要引附录。]
+
+\subsection{Verification}
+[TBD: 单相 vs erfc 解析解（G1）；两相组分质量守恒 $<10^{-6}$（G2）；
+损伤四项数值检查（G3，Q14）。]

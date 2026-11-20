@@ -1,0 +1,63 @@
+% !TeX encoding = utf-8
+% !TeX program = pdflatex
+% main.tex —— 数维杯 2026 A 题论文主文件（统稿：队友；只有队友可改本文件）
+% 编译：PDFLaTeX（推荐）或 XeLaTeX，连续编译两遍出目录
+% 骨架建立：2026-11-20（T05）
+
+\documentclass{swmcmthesis}
+
+%%%%%%%%%%%%填写相关信息%%%%%%%%%%%%%%%%%%%%%%%%%%
+% TODO【提交前必须改】把报名号换成真实队号
+\title{Multi-Field Modeling and Parameter Optimization for Multi-Fluid Injection Development in Deep Unconventional Reservoirs}
+
+\baominghao{SWBMCM2600001}           %报名号，修改为自己的队号
+
+\zubie{A} %选题
+
+% 摘要必须是第 1 页（\maketitle 自动生成）；定稿时删除所有指导注释
+% TODO【T39 整合时填】摘要结构建议（1 页内）：
+%   1) 背景一句话 + 问题：深部非常规储层 CO2/纳米复合流体注入的焖井时间权衡
+%   2) 方法：P1 三场耦合正演器（一维法向、全隐式、固定应力分裂）；
+%      P2 镜像热核解析 R(t_s)；P3 代理+NSGA-II 多目标 + 鲁棒筛选；
+%      P4 分组数据模型 + 附录 B 严格 NPV + 嵌套 Sobol
+%   3) 数值结论：三情景最优焖井时间 t_s* = [待填] / [待填] / [待填] d；
+%      三情景 ΔNPV = [待填]；排序 Case3 > Case2 > Case1
+%   4) 敏感性主控参数 Top3 = [待填]
+\abstract{[TBD: 1-page summary, to be finalized at T39. Must state the three scenarios' optimal soak times, incremental NPVs, and the dominant sensitivity parameters with concrete numbers. No school/advisor/team-member names.]}
+
+\keywords{multi-field coupling; CO$_2$ huff-n-puff; soak time optimization; surrogate model; NSGA-II; Sobol sensitivity}
+
+\date{2026}
+
+\begin{document}
+
+\graphicspath{{figures/}}
+
+% 生成首页（摘要页）
+\maketitle
+% 目录
+\tableofcontents
+
+\newpage
+
+% -------------------------正文开始
+\setcounter{page}{1}
+\input{sections/01_introduction}
+\input{sections/02_assumptions_notation}
+\input{sections/03_p1_model}
+\input{sections/04_p2_dimensional}
+\input{sections/05_p3_optimization}
+\input{sections/06_p4_data_econ}
+\input{sections/07_evaluation_sensitivity}
+\input{sections/08_conclusion}
+
+%----------------------------参考文献
+\input{sections/09_references}
+
+% ---------------------附录（推导、代码清单、补充图表）
+\newpage
+\section*{Appendix}
+\addcontentsline{toc}{section}{Appendix}
+[TBD: derivations, code listings, supplementary figures]
+
+\end{document}

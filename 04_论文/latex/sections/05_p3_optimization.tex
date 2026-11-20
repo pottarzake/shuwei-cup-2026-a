@@ -1,0 +1,28 @@
+% 05_p3_optimization.tex —— P3 多目标优化（你负责；T38 初稿 11/23 晚）
+\section{Problem 3: Multi-Objective Optimization}
+
+\subsection{Formulation}
+[TBD: 目标 $Q_o$ 与 $C_{total}$（或 $\Delta NPV$）双目标；
+设计变量 $C_n, q_{inj}, V_{inj}, f_{CO_2}, t_s, \tau_{inj}$ 及取值范围；
+约束：设备能力、纳米 30 t/井次、$p_{max}=\min(0.95p_f, 60\ \mathrm{MPa})$、
+$t_{inj}+t_s \le 90$ d；三情景 Case1/2/3。引 P3-02（技术+经济双维度合理性）。]
+
+\subsection{Surrogate-Assisted Evaluation}
+[TBD: LHS 500 点×3 情景批量正演；Kriging/RBF/RF 代理对比（10 折 CV，
+$R^2>0.95$）；代理必要性引 P3-03；Pareto 回代真实正演校验误差 <10\%。]
+
+\subsection{NSGA-II and Compromise Solutions}
+[TBD: 种群 100、代数 200；每情景 2--3 个折中解（ knee 点选取准则写清楚）；
+三情景可行域差异：Case1 空（工程不可行要如实报告）、Case2 上限约 137 m$^3$/d、
+Case3 全区间。前沿图 + 折中解表。]
+
+\subsection{Robustness Screening}
+[TBD: 对渗透率、地应力等 ±15\% 扰动（说明分布与样本数，500 次）；
+四项指标：工程可行率、$\Pr(\Delta NPV>0)$、最差 10\% 平均 $\Delta NPV$、均值±标准差；
+$\mu-\sigma$ 为主判据，CVaR$_{0.9}$ 对照（引 P3-04）；工程建议。]
+
+\subsection{Injection Timing and Fracture Closure}
+[TBD（对应 T23，可并入 P1/P3）：$\tau_{inj}$ 等待期内缝宽
+$w_f=w_{f,\infty}+(w_{f0}-w_{f,\infty})e^{-c_c(\sigma'_n-\sigma'_{n0})}$、
+$k_f=w_f^2/12$、导流 $\propto w_f^3$（引 P1-07/P1-11）；
+$\tau_{inj}$ 增大时 $w_f, k_f, NPV$ 单调下降；与折现影响分离。]

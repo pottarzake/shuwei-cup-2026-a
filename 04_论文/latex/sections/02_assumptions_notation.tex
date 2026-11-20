@@ -1,0 +1,74 @@
+% 02_assumptions_notation.tex —— 假设与符号表（T05 已定稿 8 条假设 + 初版符号表）
+\section{Model Assumptions and Notation}
+
+\subsection{Assumptions}
+% 八条统一假设（v0.4 总纲 §4；全文一致，放宽任何一条必须在相应章节说明理由）
+\begin{enumerate}
+\item The reservoir is an isothermal, isotropic continuous medium. The matrix is described
+by a single-porosity model; hydraulic fractures are embedded high-conductivity planar
+regions; natural fractures in Case~3 are represented by an equivalent permeability
+enhancement.
+\item CO$_2$ is in supercritical state under reservoir conditions
+($T_c = 304.13$ K, $p_c = 7.38$ MPa). Its density and viscosity follow the
+Peng--Robinson equation of state / the Appendix~A property table. Phase-change latent
+heat is neglected.
+\item CO$_2$ dissolution in oil and formation water obeys Henry's law with instantaneous
+equilibrium; dissolution causes oil swelling and viscosity reduction. A free CO$_2$
+phase is included in the forward model; a two-phase variant without a free gas phase is
+used as a baseline for comparison.
+\item Nanoparticles are transported only in the aqueous phase, with advection, molecular
+diffusion, and reversible adsorption. They reduce the oil--water interfacial tension and
+alter the contact angle, thereby modifying capillary pressure and relative permeability.
+\item The rock is an isotropic poroelastic solid under the small-strain, quasi-static
+assumption. Damage is described by a scalar variable $d \in [0,1]$; Young's modulus,
+porosity, and matrix permeability are degraded according to the prescribed relations.
+\item Flow obeys Darcy's law; relative permeabilities and capillary pressure are functions
+of saturation; stress sensitivity enters through porosity, matrix permeability, fracture
+width, and fracture permeability as functions of effective stress (or pore pressure).
+\item The top and bottom seals are impermeable; the outer boundary is a constant-pressure /
+constant-stress boundary. Gravity, temperature field, chemical reactions, salt
+precipitation, asphaltene deposition, and wetting hysteresis are neglected; flow reversal
+(back-injection) is not allowed.
+\item The economic evaluation strictly follows Appendix~B: all injected and produced
+volumes are metered at the reference state of 25 MPa and 300 K; taxes, salvage value,
+and sunk costs are excluded.
+\end{enumerate}
+% 合理性引用建议：假设2 引 P1-04（相态实验）；假设4 引 P1-05/P1-06；
+% 假设5 引 P1-14（线性孔隙弹性）；假设3 引 P2-02（活油/死油差异）。
+
+\subsection{Notation}
+% 初版符号表（v0.4 总纲 §2.2/§4.2 + 附录 B 经济符号）。
+% 铁律：P2/P3/P4 用到的每个符号必须能在此表或 P1 章节找到定义。
+\begin{table}[h!t]
+\centering
+\caption{Primary notation.}
+\label{tbl:notation}
+\small
+\begin{tabular}{cl}
+\toprule[1.5pt]
+Symbol & Description\\
+\midrule[1pt]
+$x,\ L$ & normal distance from fracture face; domain length (m)\\
+$L_f,\ h_f,\ w_f,\ N_f$ & fracture half-length, height, width; number of fractures\\
+$p,\ p_0,\ p_{inj},\ p_{wf}$ & pressure; initial, injection, bottom-hole flowing pressure\\
+$S_w,\ S_o,\ S_g$ & phase saturations ($S_w+S_o+S_g=1$)\\
+$k,\ k_m,\ k_f$ & permeability; matrix and fracture permeability (m$^2$)\\
+$\mu,\ \rho$ & viscosity and density of phases\\
+$D$ & hydraulic diffusivity of the matrix (m$^2$/s)\\
+$\omega$ & CO$_2$ mass fraction in a phase\\
+$C_n,\ C_w,\ C_a$ & nano concentration (wt\%); aqueous mass conc.; adsorbed conc.\\
+$q_{inj},\ V_{inj},\ f_{CO_2}$ & injection rate (m$^3$/d), total volume, CO$_2$ volume fraction\\
+$t_{inj},\ t_s,\ \tau_{inj}$ & injection duration, soak time, injection timing (d)\\
+$u_x,\ \varepsilon_{xx}$ & displacement and strain ($x$ direction; tension positive)\\
+$\sigma,\ \sigma',\ \sigma_h$ & total/effective stress, horizontal in-situ stress (compression positive)\\
+$\alpha,\ E,\ \nu$ & Biot coefficient; Young's modulus; Poisson's ratio\\
+$d,\ \kappa$ & scalar damage variable; compressive strain history\\
+$R(t_s)$ & stimulation radius: farthest point with $\Delta p / p_0 \ge 5\%$\\
+$Q_o,\ Q_w,\ Q_{360}$ & cumulative oil/water production over 360 d\\
+$C_{total}$ & total operation cost\\
+$NPV,\ NPV_{B1},\ \Delta NPV$ & net present value; fracturing-only baseline; increment\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+% 无量纲群表在 §4（P2）给出；此处不重复。

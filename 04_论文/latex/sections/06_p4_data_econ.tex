@@ -1,0 +1,118 @@
+% 06_p4_data_econ.tex —— P4 数据模型与经济评价（队友；2026-11-20 填实际数字初稿，
+% 机理对比段留 [TBD-mech] 等 T25）
+\section{Problem 4: Data-Driven Production Model and Economic Evaluation}
+
+\subsection{Data Partitioning and Quality Control}
+The synthetic production data set (Attachment C) contains 38,880 records:
+3 scenarios $\times$ 3 nano-concentrations $\times$ 12 soak-time levels
+$\times$ 360 production days, with no missing values and no duplicated rows.
+Daily oil rates carry $\pm5\%$ Gaussian noise with non-negative truncation;
+truncated (zero) rates occur only in 36 of 108 groups, all in Case~1
+(low-permeability) at late production times, and depress $Q_{360}$ by less
+than 1--2\%. The bottom-hole pressure decays smoothly from an early maximum
+(59.6 MPa in Case~3, briefly above the initial reservoir pressure as the
+problem statement allows) and correlates with the oil rate ($\rho = 0.96$),
+confirming physical consistency.
+
+Following the blocked cross-validation principle \cite{p4-01}, we partition
+by entire (case, $C_n$, $t_s$) groups rather than by individual days:
+8 soak levels $\{5,10,20,25,30,35,40,50\}$ d form the training set (72 groups),
+$t_s = 55$ d is the validation set, and $t_s \in \{15,45\}$ d (interpolation
+hold-out) together with $t_s = 60$ d (extrapolation) form the test set.
+The three subsets have no group overlap, and the test set contains soak levels
+never seen in training, as required.
+
+\subsection{Production Prediction Models}
+We compare four regression models for the group-level cumulative oil
+$Q_{360}$: a quadratic response surface, gradient boosting (depth-limited to
+3 against over-fitting), random forest, and Gaussian-process (GP) regression
+with an RBF kernel; features are $C_n$, $t_s$, and scenario indicators.
+Model selection uses GroupKFold with entire soak levels held out (8 folds),
+mirroring the extrapolation task. The GP achieves the best cross-validated
+RMSE (56.6 m$^3$, MAPE 5.2\%) and validation MAPE of 1.6\%; the tree
+ensembles cannot interpolate a withheld interior soak level (their
+predictions are piecewise constant in $t_s$), which disqualifies them for the
+soak-time scan despite good endpoint behavior. The quadratic surface
+under-fits the saturation trend. Simple baselines confirm the need for
+nonlinearity: a constant predictor attains 13\% MAPE, a plain linear model
+74\%, and a log-$t_s$ linear model 27\%.
+
+The GP is frozen (features and hyper-parameter grid fixed) and evaluated on
+the test set exactly once (Table~\ref{tbl:p4_test}): MAPE is 0.96\% on the
+interpolation hold-out and 4.10\% on the $t_s = 60$ d extrapolation, well
+within the 15\% target, with rank correlation above 0.98 everywhere.
+
+\begin{table}[h!t]
+\centering
+\caption{Frozen GP: one-shot test performance for $Q_{360}$.}
+\label{tbl:p4_test}
+\small
+\begin{tabular}{lccccc}
+\toprule[1.5pt]
+Subset & $n$ & RMSE (m$^3$) & MAPE (\%) & Spearman\\
+\midrule[1pt]
+Interpolation ($t_s=15/45$) & 18 & 19.9 & 0.96 & 1.000\\
+Extrapolation ($t_s=60$)    & 9  & 53.7 & 4.10 & 0.983\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+Prediction uncertainty is quantified with the GP posterior std. Out-of-fold
+95\% intervals cover 77.8\% of training groups; a variance-scaling
+calibration ($\kappa = 1.42$) raises this to 84.7\%---still below the nominal
+95\%, which we report as is. On the test set the coverage is 100\% with
+honestly widened intervals, reflecting enlarged extrapolation uncertainty.
+Interpretability analysis (permutation importance and partial-dependence
+plots) attributes 77\% of predictive power to the scenario indicators
+(permeability contrast between cases), 20\% to the soak time, and only
+3\% to the nano-concentration within the studied range; the partial-dependence
+curves show $Q_{360}$ increasing near-linearly in $C_n$ and saturating in
+$t_s$, consistent with the $\sqrt{t}$ pressure-diffusion scaling of the
+mechanistic model (Section~4).
+
+\subsection{Economic Evaluation under Appendix B}
+The economic module strictly follows Appendix~B: all volumes are metered at
+the 25 MPa, 300 K reference state; $t_{inj} = V_{inj}/q_{inj}$; cash flows
+are discounted daily at $r = 8\%$/yr from day 0; the injection fee accrues
+over the actual injection days, the soak fee over $t_s$, and the production
+phase carries only variable costs ($c_{prod} = 0.035$, $c_{water} = 0.0025$
+10$^4$ CNY/m$^3$). The implementation reproduces the worked example of the
+problem statement to the cent (848.25$\times10^4$ CNY for
+$V_{inj}=3000$ m$^3$, $f_{CO_2}=0.5$, $C_n=1.0$ wt\%, 10 d injection and
+30 d soak). Produced-water data are absent from Attachment~C (a known data
+gap); we adopt a water--oil ratio $WOR = 0.5$ and show that NPV varies by
+less than 2\% over $WOR \in [0,2]$.
+
+Figure~\ref{fig:p4_npv} shows NPV versus soak time for the three scenarios
+at the baseline operation ($q_{inj}=300$ m$^3$/d, $V_{inj}=3000$ m$^3$,
+$f_{CO_2}=0.5$, $\tau_{inj}=0$). The economically optimal soak time
+(maximizing NPV) is $t_s^* = 10$ d for Case~1, 20 d for Case~2, and
+30--40 d for Case~3 (35 d at $C_n=1.0$). Only Case~3 attains a positive
+absolute NPV (up to $+284\times10^4$ CNY at $C_n=0.5$, $t_s=40$ d);
+Case~1 and Case~2 remain negative at all soak levels because the 3000 m$^3$
+fluid slug dwarfs the producible volume---a conclusion independently
+supported by the injectivity analysis of the mechanistic model, which shows
+Case~1 cannot even accept 300 m$^3$/d without exceeding $p_{max}$
+(Section~5). Breakeven oil prices at $t_s^*$ are 796 USD/bbl (Case~1),
+157 USD/bbl (Case~2) and 64 USD/bbl (Case~3, below the 75 USD/bbl market
+price), i.e.\ Case~3 is the only economically viable scenario under the
+baseline operation. Following the requirement to report loss categories
+separately, we distinguish (i) engineering infeasibility (violation of
+$p_{max}$, handled as a hard constraint in Section~5), (ii) absolute
+NPV $<0$ (all 36 Case~1 and Case~2 combinations tested, 6 of 36 in
+Case~3), and (iii) $\Delta NPV = NPV - NPV_{B1}$ against the
+fracturing-only baseline $B1$, which is reported once the mechanistic
+baseline production profile is available [TBD-mech].
+
+\subsection{Mechanism--Data Comparison}
+[TBD-mech T25: overlay of the three $Q_{360}(t_s)$ curves from the frozen
+GP and from the mechanistic forward model at baseline operation; error and
+rank-order agreement; attribution of discrepancies to model assumptions,
+numerical error, and the $\pm5\%$ data noise, with at least one piece of
+evidence per category.]
+
+% 图表（T36/T37 定稿统一编号）：
+%   fig:p4_split   T03_split_overview.png      数据划分
+%   fig:p4_models  T12_model_comparison.png    模型对比 + val 散点
+%   fig:p4_npv     T16_npv_ts_curves.png       NPV–ts 曲线
+%   fig:p4_interpret T15_interpretability.png  重要性 + PDP
