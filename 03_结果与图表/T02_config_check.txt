@@ -1,0 +1,8 @@
+Case0: km0=9.869e-17 m2, phi=0.1, p0=4.500e+07 Pa, T=383.15 K, sigma_h=5.200e+07 Pa, C_n_wt=1.0
+Case1: km0=2.961e-17 m2, phi=0.08, p0=5.000e+07 Pa, T=393.15 K, sigma_h=5.800e+07 Pa, C_n_wt=1.0
+Case2: km0=9.869e-17 m2, phi=0.1, p0=4.500e+07 Pa, T=383.15 K, sigma_h=5.200e+07 Pa, C_n_wt=1.0
+Case3: km0=4.935e-16 m2, phi=0.13, p0=4.800e+07 Pa, T=373.15 K, sigma_h=4.800e+07 Pa, C_n_wt=1.0
+D(Case0) = 2.350e-04 m2/s
+adsorption C_a (Case0, Cn=1wt%) = 1.000e-01 kg/kg
+available nano / rock mass     = 4.444e-04 kg/kg
+ADSORPTION OVER-CAPACITY x225.0 -> 线性等温线不可直接使用，需截断或 Langmuir
