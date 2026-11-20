@@ -5,6 +5,7 @@
 注入+焖井<=90 d。V/f 的缩放指数是待验证假设。
 """
 
+import argparse
 import sys
 from pathlib import Path
 import numpy as np
@@ -26,10 +27,26 @@ OUT.mkdir(exist_ok=True)
 SEED = 20261120
 
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--positive-vf", action="store_true",
+                    help="rerun the exploratory 0.2/0.1 exponent assumption")
+args = parser.parse_args()
+exponents = (0.2, 0.1) if args.positive_vf else (0.0, 0.0)
+filename_suffix = "_positive_vf" if args.positive_vf else ""
+
+
+def output_file(name, extension):
+    return OUT / f"{name}{filename_suffix}.{extension}"
+
+
+def evaluate_scheme(*args, **kwargs):
+    return evaluate(*args, exp_v=exponents[0], exp_f=exponents[1], **kwargs)
+
+
 def make_eval(case):
     def f(x):
         cn, q, V, fc, ts, tau = decode(x)
-        r = evaluate(case, cn, q, V, fc, ts, tau)
+        r = evaluate_scheme(case, cn, q, V, fc, ts, tau)
         return -r["Q_o"], r["C_total"], r["violation"]
     return f
 
@@ -37,7 +54,12 @@ def make_eval(case):
 lines = ["P3 NSGA-II（pop=100, gen=80）",
          "目标 max Q_o / min C_total。粗筛使用固定流度估算的 q_max。",
          "附件 C 仅训练档标定。τ_inj=0；等待期闭合效应待接入。",
-         "V/f 指数按 T31 标定取 0（a=-0.014, b=0.001），产水采用 WOR=0.5。NPV 为绝对值，B1 待校准。"]
+         f"V/f 指数设定为 {exponents[0]:g}/{exponents[1]:g}，产水用 WOR=0.5。"
+         "NPV 为绝对值，B1 待校准。"]
+if args.positive_vf:
+    lines.append("正指数为假设压力测试，三相压力复核仅在零指数主跑执行。")
+else:
+    lines.append("零指数为保守建模约定，T31 仅检验 Case3 的局部降阶响应。")
 fronts = {}
 
 for case in (1, 2, 3):
@@ -48,7 +70,7 @@ for case in (1, 2, 3):
     for i in candidates:
         x = X[i]
         cn, q, V, fc, ts, tau = decode(x)
-        r = evaluate(case, cn, q, V, fc, ts, tau)
+        r = evaluate_scheme(case, cn, q, V, fc, ts, tau)
         pts.append([cn, q, V, fc, ts, tau, r["Q_o"], r["C_total"], r["NPV"],
                     r["t_inj"], r["m_nano"], r["q1"], r["Ld"]])
     df = pd.DataFrame(pts, columns=["cn", "q", "V", "f", "ts", "tau",
@@ -56,7 +78,7 @@ for case in (1, 2, 3):
                                     "m_nano", "q1", "Ld"])
     df = (df.sort_values(["Q_o", "C_total"])
           .drop_duplicates(subset=["Q_o", "C_total"]).reset_index(drop=True))
-    df.to_csv(OUT / f"T29_pareto_case{case}.csv", index=False, encoding="utf-8-sig")
+    df.to_csv(output_file(f"T29_pareto_case{case}", "csv"), index=False, encoding="utf-8-sig")
     if not df.empty:
         fronts[case] = df
         lines.append(f"Case{case}: 粗筛非支配点 {len(df)} 个；Q_o {df.Q_o.min():.0f}–"
@@ -116,12 +138,15 @@ for case, df in fronts.items():
         # 鲁棒性
         vals = []
         for kr, pr, sr in samples:
-            rr = evaluate(case, r.cn, r.q, r.V, r.f, r.ts, r.tau,
+            rr = evaluate_scheme(case, r.cn, r.q, r.V, r.f, r.ts, r.tau,
                           k_r=kr, phi_r=pr, sh_r=sr)
             if rr["feasible"]:
                 vals.append(rr["NPV"])
         vals = np.array(vals)
-        pressure_status, pressure_peak, pressure_limit, pressure_time = verify_pressure(case, r)
+        if args.positive_vf:
+            pressure_status, pressure_peak, pressure_limit, pressure_time = "not_run", np.nan, np.nan, np.nan
+        else:
+            pressure_status, pressure_peak, pressure_limit, pressure_time = verify_pressure(case, r)
         print(f"Case{case}-S{k}: pressure recheck {pressure_status}", flush=True)
         robust_rows.append([case, k, r.cn, r.q, r.V, r.f, r.ts, r.tau,
                             r.Q_o, r.C_total, r.NPV,
@@ -139,7 +164,7 @@ rob = pd.DataFrame(robust_rows, columns=["case", "scheme", "cn", "q", "V", "f",
                                          "NPV_worst10_conditional", "prob_NPV_pos_conditional",
                                          "prob_feasible_and_NPV_pos", "pressure_status_3phase",
                                          "pressure_peak_MPa", "pressure_limit_MPa", "pressure_stop_d"])
-rob.to_csv(OUT / "T30_robust.csv", index=False, encoding="utf-8-sig")
+rob.to_csv(output_file("T30_robust", "csv"), index=False, encoding="utf-8-sig")
 if not rob.empty:
     lines.append("")
     lines.append("粗筛鲁棒性（±15% k/phi/sigma_h，200 次，情景内共用扰动样本）：")
@@ -149,6 +174,8 @@ if not rob.empty:
                      f"条件P(NPV>0)={r.prob_NPV_pos_conditional:.2f}, "
                      f"条件worst10={r.NPV_worst10_conditional:.0f}, "
                      f"条件mean±sd={r.NPV_mean:.0f}±{r.NPV_std:.0f}")
+        if r.pressure_status_3phase == "not_run":
+            continue
         lines.append(f"    名义三相注入复核: {r.pressure_status_3phase}, "
                      f"估算峰值/上限 {r.pressure_peak_MPa:.2f}/{r.pressure_limit_MPa:.2f} MPa, "
                      f"停止时刻 {r.pressure_stop_d:.2f} d")
@@ -159,7 +186,7 @@ for case, df in fronts.items():
     ax.plot(df.C_total, df.Q_o, "o-", ms=3, label=f"Case{case}")
 ax.set_xlabel("C_total (10^4 CNY)"); ax.set_ylabel("Q_o (m3)")
 ax.grid(alpha=.3); ax.legend(fontsize=8)
-fig.tight_layout(); fig.savefig(OUT / "T29_pareto.png", dpi=200); plt.close(fig)
+fig.tight_layout(); fig.savefig(output_file("T29_pareto", "png"), dpi=200); plt.close(fig)
 
-(OUT / "T29_pareto_summary.txt").write_text("\n".join(lines), encoding="utf-8")
+output_file("T29_pareto_summary", "txt").write_text("\n".join(lines), encoding="utf-8")
 print("\n".join(lines))
