@@ -36,14 +36,62 @@ I7 & Test MAPE (\%)                    & 3.27  & 0.87  & 0.51\\
 \end{table}
 
 \subsection{Nested Sobol Sensitivity Analysis}
-[TBD T35: Saltelli sampling ($N = 1024$); outer loop samples all key
-geological/engineering parameters except $t_s$; for each outer sample the
-inner loop scans $t_s$ and records the NPV-maximizing $t_s^*$; report the
-total-effect Sobol indices of $Q_{360}$ and $t_s^*$, identify the top-3
-parameters controlling $t_s^*$, and compare the ranking with the reference
-study \cite{p4-04} (injected volume $>$ capillary-pressure multiplier
-$>$ matrix permeability $>$ $\dots$). Consistency corroborates the
-mechanistic model; deviations are explained by the additional nano and
-CO$_2$ variables in our design. Methodology follows \cite{p4-02}.]
+Following \cite{p4-02}, we compute variance-based Sobol indices with
+Saltelli sampling ($N = 1024$, second-order terms included). The sampling
+uses three complementary matrix families: $A_B^{(i)}$ (column $i$ from $A$)
+for first-order indices, $A_B^{(\sim i)}$ (column $i$ from $B$) for
+total-effect indices, and $A_B^{(ij)}$ for second-order terms; all outputs
+are mean-centered before forming moments to avoid the catastrophic
+cancellation $f_0^2 \gg V_i$ that otherwise corrupts first-order estimates
+when outputs are large. The forward model is the T22-calibrated
+reduced-order evaluator (\S5) with the volume/fraction scaling exponents
+$0.2/0.1$; eleven inputs are sampled uniformly ($k_{m0}$, $\phi_0$,
+$\sigma_h$, $\sigma_H$, $E$, $C_n$, $V_{inj}$, $q_{inj}$, $f_{CO2}$,
+$t_s$, $\rho_{nf}$). For $Q_{360}$, $t_s$ enters as an input; for the
+economic optimum $t_s^*$ it is excluded and each outer sample scans
+$t_s \in \{5, 10, \dots, 60\}$~d over the feasible set, taking the
+NPV-maximizing level (ties to the shorter soak); outer samples with no
+feasible soak are counted and reported (they enter as the shortest level).
+
+For $Q_{360}$ the ranking is consistent across scenarios
+(Figure~\ref{fig:sobol}): soak time, porosity and injected volume dominate
+(total-effect indices in Case~3: $ST_{t_s} = 0.53$, $ST_{\phi_0} = 0.27$,
+$ST_{V_{inj}} = 0.17$), while matrix permeability, nano-concentration and
+the stress/elastic parameters contribute little; second-order terms are
+small ($\leq 0.05$), i.e.\ the production response is nearly additive in the
+top parameters. For $t_s^*$ the picture is scenario-dependent. Case~1 has
+an empty feasible region for every outer sample (100\%, consistent with
+the P3 optimization), so no $t_s^*$ distribution exists---soak-time
+optimization is moot where the design is infeasible. Case~2 is dominated by
+the injection rate ($ST_{q_{inj}} = 0.93$) and matrix permeability
+($ST_{k_{m0}} = 0.45$, largely through the $k_{m0} \times q_{inj}$
+interaction $S_{ij} = 0.30$): with the feasibility boundary cutting
+through the sampled box, $t_s^*$ is controlled by whether the fracture
+pressure constraint leaves any room for soaking at all. Case~3, where
+feasibility is rarely binding (8.3\% infeasible), $t_s^*$ is controlled by
+the economic drivers---injected volume, CO$_2$ fraction and nano-
+concentration ($ST = 0.65$, $0.63$, $0.62$)---exactly the direction of the
+reference ranking of \cite{p4-04} (injected volume first), corroborating
+the model. The Case~2 deviation (rate- and permeability-bound) is
+explained by our additional nano and CO$_2$ decision variables, the
+single-cycle design, and the explicit pressure-feasibility constraint,
+none of which enter the reference study's ranking. Sensitivity of NPV at
+the optimum shows the same pattern and is reported in the supplementary
+tables. Two limitations are stated openly: $E$, $\sigma_H$ and $\rho_{nf}$
+are inert under the current reduced-order forward model (their indices are
+$\approx 0$ by construction rather than by physics), and the exponents
+$0.2/0.1$ are unverified scaling assumptions; both are resolved when the
+analysis is re-run on the mechanistic forward model of Section~4, which
+uses the identical sampling and estimator code.
 
 % 图表：fig:radar → T26_radar.png（T37 统一编号定稿）
+
+\begin{figure}[h!t]
+\centering
+\includegraphics[width=\textwidth]{../../03_结果与图表/T35_sobol.png}
+\caption{Sobol first-order ($S_i$) and total-effect ($ST_i$) indices for
+$Q_{360}$ (top row) and the economic optimum $t_s^*$ (bottom row) in the
+three scenarios (Saltelli $N = 1024$; Case~1 $t_s^*$ panel is empty because
+no outer sample has a feasible soak).}
+\label{fig:sobol}
+\end{figure}
