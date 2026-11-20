@@ -23,7 +23,38 @@
 %   3) 数值结论：三情景最优焖井时间 t_s* = [待填] / [待填] / [待填] d；
 %      三情景 ΔNPV = [待填]；排序 Case3 > Case2 > Case1
 %   4) 敏感性主控参数 Top3 = [待填]
-\abstract{[TBD: 1-page summary, to be finalized at T39. Must state the three scenarios' optimal soak times, incremental NPVs, and the dominant sensitivity parameters with concrete numbers. No school/advisor/team-member names.]}
+\abstract{Deep tight-oil reservoirs have matrix permeability below
+0.1~mD and recovery factors commonly below 10\%, and CO$_2$ plus
+nano-imbibition huff-n-puff is used to improve them. The central trade-off
+is the soak time: a short soak confines the injected fluids near the
+fracture, while a long soak defers production and accumulates cost. We
+develop one forward model and apply it to the four problems. Problem~1
+reduces the matrix--fracture exchange to one dimension normal to the
+fracture and couples three-phase flow with a free CO$_2$ phase, dissolved
+CO$_2$, nano transport with Langmuir adsorption, incremental
+poroelasticity and compressive-strain damage; it reproduces the
+single-phase erfc solution to $1.2\times10^{-3}$, is second order in space
+and first order in time, and conserves phase mass to $10^{-10}$.
+Problem~2 derives a mirror-kernel solution for shut-in pressure
+redistribution and validates it against the three-phase simulation; the
+5\% pressure radius disappears after 3--4~d at 300~m$^3$/d and 6--8~d at
+800~m$^3$/d, so the pressure disturbance is short-lived and is not the
+source of a long-soak benefit. Problem~3 calibrates a reduced production
+model to the training groups of the supplied data and solves the
+bi-objective problem with NSGA-II. Case~1 is infeasible because its
+injectivity limit is about 15~m$^3$/d; Case~2 is feasible but uneconomic
+(NPV $-164$ to $-87\times10^4$~CNY, joint feasibility--profitability
+frequency zero); Case~3 is robustly viable (NPV $+365$ to
+$+671\times10^4$~CNY, all perturbed samples feasible and profitable).
+Problem~4 builds a grouped Gaussian-process model, applies the Appendix-B
+cash-flow rules exactly, and gives economic optima of 10, 20 and 30--40~d
+for the three scenarios at baseline operation; only Case~3 attains a
+positive NPV (up to $+284\times10^4$~CNY) with a breakeven oil price of
+64~USD/bbl. Sobol analysis attributes $Q_{360}$ mainly to soak time
+($ST=0.63$) and porosity ($ST=0.31$); for the economic optimum, Case~2 is
+controlled by injection rate and matrix permeability, while Case~3 is
+controlled by injected volume, CO$_2$ fraction and nano concentration
+($ST=0.65$, $0.62$, $0.62$).}
 
 \keywords{multi-field coupling; CO$_2$ huff-n-puff; soak time optimization; surrogate model; NSGA-II; Sobol sensitivity}
 
@@ -58,6 +89,89 @@
 \newpage
 \section*{Appendix}
 \addcontentsline{toc}{section}{Appendix}
-[TBD: derivations, code listings, supplementary figures]
+\subsection*{A.1 Mirror-kernel derivation}
+
+The shut-in problem is
+\begin{equation}
+\frac{\partial u}{\partial t}=D\frac{\partial^2u}{\partial x^2},
+\qquad x>0,\qquad
+\left.\frac{\partial u}{\partial x}\right|_{x=0}=0,\qquad u\to0\ \ (x\to\infty).
+\end{equation}
+The zero-flux condition is enforced by the even extension of the initial
+disturbance to $x<0$. For a step $u_0=A$ on $[0,a]$, integrating the Gaussian
+kernel against the even extension gives Eq.~\eqref{eq:kernel}. The threshold
+root in Eq.~\eqref{eq:threshold} is unique because $u(x,t_s)$ decreases
+monotonically in $x$; it is found by bisection on a fine grid. When
+$u(0,t_s)<0.05p_0$ the root does not exist and $R=0$ by definition. The
+constant-pressure step result, Eq.~\eqref{eq:erfc}, follows from the
+complementary error function with $\Theta=0.05p_0/(p_{inj}-p_0)$.
+
+\subsection*{A.2 Dimensionless groups}
+
+The groups in Table~\ref{tbl:pi_groups} are obtained by substituting the
+scales of Eq.~\eqref{eq:scales} into the flow, transport, stress and damage
+equations. The magnitudes use Case~3 parameters; Case~0 gives
+$P=0.27$, $\Gamma=2.25$ and $C_\phi=0.027$. The adsorption group is evaluated
+with the initial water saturation, $K_a=(1-\phi)\rho_rK_d/(\phi S_w)$.
+
+\subsection*{A.3 Economic cash flow and self-check}
+
+The total cost and the daily cash flow follow Appendix~B of the problem:
+\begin{equation}
+C_{total}=C_{frac}+c_{inj}t_{inj}+c_{soak}t_s+C_{nano}+C_{CO_2}
++c_{prod}Q_o+c_{water}Q_w,
+\end{equation}
+\begin{equation}
+CF(t)=P_{oil}^*Q_o-c_{prod}Q_o-c_{water}Q_w
+-c_{inj}I_{inj}-c_{soak}I_{soak}-c_{nano}m_{nano,day}-c_{CO_2}m_{CO_2,day},
+\end{equation}
+\begin{equation}
+NPV=-C_{frac}+\sum_{t=1}^{T}\frac{CF(t)}{(1+r)^{t/365}},
+\qquad T=t_{inj}+t_s+360 .
+\end{equation}
+The fracturing-only baseline $B1$ uses $T=360$~d. The implementation
+reproduces the worked example of the problem statement exactly:
+$300+38.25+300+90+120=848.25\times10^4$~CNY for $V_{inj}=3000$~m$^3$,
+$f_{CO_2}=0.5$, $C_n=1$~wt\%, $t_{inj}=10$~d and $t_s=30$~d.
+
+\subsection*{A.4 Code and reproduction}
+
+\begin{table}[h!t]
+\centering
+\caption{Main code modules.}
+\small
+\begin{tabular}{ll}
+\toprule[1.5pt]
+File & Purpose\\
+\midrule[1pt]
+\texttt{config.py} & parameter tables, SI conversion, reference state\\
+\texttt{model/three\_phase.py} & three-phase flow, CO$_2$ and nano transport\\
+\texttt{model/two\_phase.py} & oil--water baseline\\
+\texttt{model/nano\_transport.py} & Langmuir adsorption and scalar transport\\
+\texttt{model/p2\_scaling.py} & mirror kernel and $R(t_s)$\\
+\texttt{model/production.py} & reduced production model\\
+\texttt{model/p3\_forward.py} & P3 evaluator\\
+\texttt{model/nsga2.py} & NSGA-II\\
+\texttt{model/waiting.py} & fracture closure during waiting\\
+\texttt{model/mechanics.py} & poroelastic strain and damage\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+Each model has a matching validation script in the code directory
+(\texttt{02\_validate\_single\_phase.py} through \texttt{12\_waiting.py}).
+The scripts write their results to the results directory; the paper figures
+are copied from that folder. The paper is compiled with
+\texttt{pdflatex main.tex} (two passes for the table of contents).
+
+\subsection*{A.5 Supplementary sensitivity}
+
+The nano radius is grid-dependent: at 10~d and $C_n=1$~wt\%, a 50-cell mesh
+gives a zero 0.01~wt\% radius, whereas 200 cells give $0.15$~m for the
+tabulated $K_d$ in m$^3$/kg and $0.52$~m for the L/kg interpretation. The
+waiting-period result is controlled by the uncalibrated compliance
+coefficient: at $\tau=15$~d, $c_c=0.02$, $0.05$ and $0.10$~MPa$^{-1}$ give
+Case~3 NPV of $595$, $376$ and $17\times10^4$~CNY, while $\tau_c$ between
+1 and 5~d changes the result by less than $6\%$.
 
 \end{document}
