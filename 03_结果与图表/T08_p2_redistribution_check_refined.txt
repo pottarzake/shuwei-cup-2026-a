@@ -1,0 +1,15 @@
+Case3, N_f=10, q=300 m3/d, L=40 m, cells=200
+dt_inj=0.05 d, dt_soak=0.1 d, V=3000 m3, f_CO2=0.5
+p0=48.00 MPa, threshold=2.400 MPa
+injection end: t=10.00 d, p_inj_peak_est=52.826 MPa, A=4.82206 MPa, a=19.06732 m, D=1.6870484e-03 m2/s
+At the closed face, the first-cell pressure approximates the boundary value.
+Finite-domain diffusion uses the same initial profile, zero flux at x=0, and dp(L)=0.
+ts= 1 d: R_num= 18.08, R_semi= 18.58, R_finite= 16.09, dp_first_cell=3.519 MPa
+ts= 2 d: R_num= 14.80, R_semi= 14.00, R_finite=  1.99, dp_first_cell=2.965 MPa
+ts= 3 d: R_num=  8.48, R_semi=  0.00, R_finite=  0.00, dp_first_cell=2.555 MPa
+ts= 4 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=2.217 MPa
+ts= 5 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=1.928 MPa
+ts= 6 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=1.679 MPa
+ts= 8 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=1.273 MPa
+ts=10 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=0.965 MPa
+Max sampled |R_semi-R_num|/R_num for R_num > 0: 100.00%

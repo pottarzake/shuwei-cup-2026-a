@@ -1,7 +1,19 @@
-q=800.0, t_inj=3.75: p_face=56.14, A=8.14 MPa, a=15.5 m
-  ts=1: R_num=24.12, R_ana=24.23, dp_face=5.313
-  ts=2: R_num=23.62, R_ana=25.50, dp_face=4.358
-  ts=5: R_num=13.31, R_ana=14.43, dp_face=2.796
-  ts=10: R_num=0.00, R_ana=0.00, dp_face=1.406
-  ts=20: R_num=0.00, R_ana=0.00, dp_face=0.353
-  ts=30: R_num=0.00, R_ana=0.00, dp_face=0.083
+Case3, N_f=10, q=800 m3/d, L=40 m, cells=100
+dt_inj=0.1 d, dt_soak=0.2 d, V=3000 m3, f_CO2=0.5
+p0=48.00 MPa, threshold=2.400 MPa
+injection end: t=3.75 d, p_inj_peak_est=56.173 MPa, A=8.13916 MPa, a=15.61334 m, D=1.6870484e-03 m2/s
+At the closed face, the first-cell pressure approximates the boundary value.
+Finite-domain diffusion uses the same initial profile, zero flux at x=0, and dp(L)=0.
+ts= 1 d: R_num= 23.75, R_semi= 24.35, R_finite= 23.65, dp_first_cell=5.313 MPa
+ts= 2 d: R_num= 23.24, R_semi= 25.67, R_finite= 20.06, dp_first_cell=4.358 MPa
+ts= 3 d: R_num= 21.19, R_semi= 24.44, R_finite= 12.77, dp_first_cell=3.718 MPa
+ts= 4 d: R_num= 17.97, R_semi= 21.13, R_finite=  0.00, dp_first_cell=3.216 MPa
+ts= 5 d: R_num= 13.30, R_semi= 15.08, R_finite=  0.00, dp_first_cell=2.796 MPa
+ts= 6 d: R_num=  4.70, R_semi=  0.00, R_finite=  0.00, dp_first_cell=2.435 MPa
+ts= 8 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=1.850 MPa
+ts=10 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=1.406 MPa
+ts=20 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=0.353 MPa
+ts=30 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=0.083 MPa
+ts=45 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=0.003 MPa
+ts=60 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=-0.006 MPa
+Max sampled |R_semi-R_num|/R_num for R_num > 0: 100.00%

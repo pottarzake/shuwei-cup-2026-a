@@ -29,6 +29,33 @@ def fit_step_profile(x, dp):
     return A, a
 
 
+def threshold_radius(x, dp, threshold):
+    """Interpolate the outermost threshold crossing on a sampled profile."""
+    x, dp = np.asarray(x), np.asarray(dp)
+    qualifying = np.flatnonzero(dp >= threshold)
+    if not qualifying.size:
+        return 0.0
+    last = qualifying[-1]
+    if last == len(dp) - 1:
+        return float(x[last])
+    fraction = (dp[last] - threshold) / (dp[last] - dp[last + 1])
+    return float(x[last] + fraction * (x[last + 1] - x[last]))
+
+
+def finite_domain_solution(x, ts, D, initial_x, initial_dp, modes=128):
+    """Linear diffusion on [0,L], zero flux at 0 and zero disturbance at L."""
+    initial_x, initial_dp = np.asarray(initial_x), np.asarray(initial_dp)
+    if ts == 0:
+        return np.interp(x, initial_x, initial_dp)
+    length = initial_x[-1]
+    k = (np.arange(modes) + 0.5) * np.pi / length
+    slopes = np.diff(initial_dp) / np.diff(initial_x)
+    cos_faces = np.cos(k[:, None] * initial_x)
+    coefficients = (2.0 / length) * (np.diff(cos_faces, axis=1) @ slopes) / k**2
+    decay = np.exp(-D * k**2 * ts * 86400.0)
+    return (coefficients * decay) @ np.cos(k[:, None] * np.asarray(x))
+
+
 def redistribution(x, ts, D, A, a):
     """焖井 ts 天后的压力扰动，Pa。"""
     x = np.asarray(x, float)

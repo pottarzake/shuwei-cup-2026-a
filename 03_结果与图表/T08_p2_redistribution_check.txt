@@ -1,15 +1,19 @@
-Case3, N_f=10, q=300, L=40, n=100
+Case3, N_f=10, q=300 m3/d, L=40 m, cells=100
+dt_inj=0.1 d, dt_soak=0.2 d, V=3000 m3, f_CO2=0.5
 p0=48.00 MPa, threshold=2.400 MPa
-injection end: t=10.00 d, p_face=52.82 MPa, A=4.819 MPa, a=18.95 m, D=1.687e-03 m2/s
-ts= 1.0 d: R_num= 18.07, R_ana= 18.42, dp_face=3.531 MPa
-ts= 2.0 d: R_num= 14.82, R_ana= 13.68, dp_face=2.973 MPa
-ts= 5.0 d: R_num=  0.00, R_ana=  0.00, dp_face=1.935 MPa
-ts=10.0 d: R_num=  0.00, R_ana=  0.00, dp_face=0.973 MPa
-ts=20.0 d: R_num=  0.00, R_ana=  0.00, dp_face=0.242 MPa
-ts=30.0 d: R_num=  0.00, R_ana=  0.00, dp_face=0.055 MPa
-ts=45.0 d: R_num=  0.00, R_ana=  0.00, dp_face=-0.000 MPa
-ts=60.0 d: R_num=  0.00, R_ana=  0.00, dp_face=-0.007 MPa
-
-域长检查：4*sqrt(D*ts) 接近 L 时半无限假设失效。
-  ts=30: 4*sqrt(D*ts)=264.5 m (L=40)
-  ts=60: 4*sqrt(D*ts)=374.1 m (L=40)
+injection end: t=10.00 d, p_inj_peak_est=52.830 MPa, A=4.81913 MPa, a=19.04878 m, D=1.6870484e-03 m2/s
+At the closed face, the first-cell pressure approximates the boundary value.
+Finite-domain diffusion uses the same initial profile, zero flux at x=0, and dp(L)=0.
+ts= 1 d: R_num= 17.97, R_semi= 18.54, R_finite= 16.04, dp_first_cell=3.531 MPa
+ts= 2 d: R_num= 14.78, R_semi= 13.92, R_finite=  1.43, dp_first_cell=2.973 MPa
+ts= 3 d: R_num=  8.60, R_semi=  0.00, R_finite=  0.00, dp_first_cell=2.560 MPa
+ts= 4 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=2.222 MPa
+ts= 5 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=1.935 MPa
+ts= 6 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=1.686 MPa
+ts= 8 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=1.281 MPa
+ts=10 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=0.973 MPa
+ts=20 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=0.242 MPa
+ts=30 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=0.055 MPa
+ts=45 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=-0.000 MPa
+ts=60 d: R_num=  0.00, R_semi=  0.00, R_finite=  0.00, dp_first_cell=-0.007 MPa
+Max sampled |R_semi-R_num|/R_num for R_num > 0: 100.00%

@@ -1,0 +1,6 @@
+N_f = 10
+q_ref=800 m3/d, f_CO2=0.5, L=40 m, cells=100, dt_max=0.02 d, t_end=3.75 d
+Pressure check uses a fracture-face estimate with frozen first-cell mobility. The screening model treats CO2 as insoluble.
+Case1: t_stop=0.100 d, estimated pressure limit exceeded, p_face_peak=61.13 MPa (limit 60.0), p_first_cell=59.63 MPa, Sg_max=0.023, mass_rel(w/o/CO2)=3.20e-16/1.80e-15/1.37e-10
+Case2: t_stop=0.900 d, estimated pressure limit exceeded, p_face_peak=57.03 MPa (limit 57.0), p_first_cell=56.73 MPa, Sg_max=0.051, mass_rel(w/o/CO2)=4.24e-14/6.64e-12/8.86e-08
+Case3: t_stop=3.750 d, completed without estimated overpressure, p_face_peak=56.19 MPa (limit 60.0), p_first_cell=56.16 MPa, Sg_max=0.072, mass_rel(w/o/CO2)=2.17e-14/1.10e-12/5.09e-09
