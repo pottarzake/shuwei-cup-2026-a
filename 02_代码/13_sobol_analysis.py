@@ -387,7 +387,7 @@ def _plot(results, names_q, names_t):
             ax.grid(axis="y", alpha=0.3)
             if row == 1 or col == 0:
                 ax.legend(fontsize=8)
-    fig.suptitle("T35 Sobol 一阶/总效应指数 (Saltelli N=1024, 降阶正演 p3_forward)",
+    fig.suptitle("T35 Sobol first-order / total-effect indices (Saltelli N=1024, reduced forward model p3_forward)",
                  fontsize=12)
     fig.tight_layout(rect=[0, 0, 1, 0.96])
     fig.savefig(os.path.join(OUT_DIR, "T35_sobol.png"), dpi=180)
