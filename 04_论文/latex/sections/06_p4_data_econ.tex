@@ -27,8 +27,8 @@ We compare four regression models for the group-level cumulative oil
 $Q_{360}$: a quadratic response surface, gradient boosting (depth-limited to
 3 against over-fitting), random forest, and Gaussian-process (GP) regression
 with an RBF kernel; features are $C_n$, $t_s$, their interaction $C_n t_s$,
-$\log t_s$, and scenario indicators (the feature set fixed in the master
-plan \S6.3). Model selection uses GroupKFold with entire soak levels held
+$\log t_s$, and scenario indicators (the feature set fixed a priori before
+any test evaluation). Model selection uses GroupKFold with entire soak levels held
 out (8 folds), mirroring the extrapolation task. The GP achieves the best
 cross-validated RMSE (25.1 m$^3$ mean, 82.0 worst fold; MAPE 4.6\%) and
 validation MAPE of 1.6\%; the tree
@@ -108,14 +108,81 @@ fracturing-only baseline $B1$, which is reported once the mechanistic
 baseline production profile is available [TBD-mech].
 
 \subsection{Mechanism--Data Comparison}
-[TBD-mech T25: overlay of the three $Q_{360}(t_s)$ curves from the frozen
-GP and from the mechanistic forward model at baseline operation; error and
-rank-order agreement; attribution of discrepancies to model assumptions,
-numerical error, and the $\pm5\%$ data noise, with at least one piece of
-evidence per category.]
+Figure~\ref{fig:p4_overlay} overlays the frozen-GP $Q_{360}(t_s)$ curves
+on the observed group means at $C_n = 1.0$ wt\%. Two viewpoints on the
+optimal soak time emerge, as anticipated in the master plan. The
+\emph{production} viewpoint defines $t_s^*$ as the inflection point of the
+cumulative-production-increment curve \cite{p4-04}, which the GP curves
+place at the earliest scanned level (5~d) in all three scenarios---the
+increment decays monotonically from the start. The \emph{economic}
+viewpoint of \S6.3 instead yields interior optima (10/20/35~d), because
+daily discounting and the soak-day fee shift the optimum to shorter
+soaks; the two definitions are both reported and their divergence is
+explained by the time-budget difference, not by physics
+\cite{p4-04, p4-05}.
+
+The residual mechanism--data discrepancies are attributed to three
+categories, each with independent evidence. (i)~\emph{Model
+assumptions:} the nano-transport module predicts an essentially zero
+nano-modification radius at the given adsorption coefficient (the
+injector-face concentration is $\sim\!10^{-5}$ wt\%, far below the
+0.01 wt\% threshold), and independently the data side assigns only
+6\% of predictive importance to $C_n$---two lines of evidence
+that within the studied range the nano effect acts through
+wettability/interfacial modification rather than swept volume; likewise,
+the damage variable is identically zero under the problem's damage
+strain (11--26$\times$ larger than the computed compressive strains),
+so the high Case~3 production must come from matrix permeability and
+natural-fracture equivalence rather than damage-enhanced permeability.
+(ii)~\emph{Numerical error:} the nano-front radius is not grid-converged
+(radius 0 at $n=50$ vs 0.15~m at $n=200$), so order-of-magnitude
+statements are used and precise radii are deferred to a convergence table.
+(iii)~\emph{Data noise:} the nominal $\pm5\%$ Gaussian noise with
+non-negative truncation produces a within-group CV of median 9.3\% and a
+$Q_{360}$ bias below 1--2\%, with zero rates only in Case~1 at late
+times; this noise level cannot explain the systematic
+mechanism--data differences, so where trends and rankings agree the
+noise is treated as negligible. [TBD-mech: the quantitative
+mechanistic-curve overlay and per-case error decomposition will be
+inserted once the T21 three-scenario forward scan is available.]
+
+\begin{figure}[h!t]
+\centering
+\includegraphics[width=\textwidth]{../../03_结果与图表/T25_dataside.png}
+\caption{Frozen-GP production curves $Q_{360}(t_s)$ (lines) versus
+observed group means (circles) at $C_n = 1.0$ wt\%; economic-optimum
+soak levels (ticks) are interior while production-increment inflection
+occurs at the earliest level.}
+\label{fig:p4_overlay}
+\end{figure}
 
 % 图表（T36/T37 定稿统一编号）：
 %   fig:p4_split   T03_split_overview.png      数据划分
 %   fig:p4_models  T12_model_comparison.png    模型对比 + val 散点
 %   fig:p4_npv     T16_npv_ts_curves.png       NPV–ts 曲线
 %   fig:p4_interpret T15_interpretability.png  重要性 + PDP
+
+\begin{figure}[h!t]
+\centering
+\includegraphics[width=0.9\textwidth]{../../03_结果与图表/T12_model_comparison.png}
+\caption{Model comparison for $Q_{360}$ (GroupKFold by soak level): the
+GP dominates; tree ensembles fail to interpolate withheld interior soak
+levels; baselines confirm the need for nonlinear features.}
+\label{fig:p4_models}
+\end{figure}
+
+\begin{figure}[h!t]
+\centering
+\includegraphics[width=0.9\textwidth]{../../03_结果与图表/T16_npv_ts_curves.png}
+\caption{NPV versus soak time at baseline operation; interior economic
+optima in all scenarios, positive NPV only in Case~3.}
+\label{fig:p4_npv}
+\end{figure}
+
+\begin{figure}[h!t]
+\centering
+\includegraphics[width=0.9\textwidth]{../../03_结果与图表/T15_interpretability.png}
+\caption{Permutation importance and partial-dependence profiles of the
+frozen GP; scenario identity dominates, $C_n$ contributes least.}
+\label{fig:p4_interpret}
+\end{figure}
