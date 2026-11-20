@@ -15,6 +15,23 @@ T21/T22：降阶生产模型（物质平衡 + 指数递减）。
 """
 
 import numpy as np
+from scipy.optimize import brentq
+
+
+def fit_exponential_targets(first_day_oil, total_oil, days=360):
+    """Infer initial instantaneous rate and inventory from integrated oil volumes."""
+    if not (days > 1 and total_oil / days < first_day_oil < total_oil):
+        raise ValueError("An exponential decline requires total_oil/days < Q1 < total_oil")
+    fraction = first_day_oil / total_oil
+
+    def residual(rate):
+        if rate == 0:
+            return 1.0 / days - fraction
+        return np.expm1(-rate) / np.expm1(-days * rate) - fraction
+
+    rate = brentq(residual, 0.0, 50.0)
+    inventory = total_oil / -np.expm1(-days * rate)
+    return inventory * rate, inventory
 
 
 def tank_production(p, Sw, Sg, prm, area, L, V_bulk,

@@ -16,8 +16,10 @@ import matplotlib.pyplot as plt
 BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(BASE / "02_代码"))
 
-from model.p3_forward import evaluate, decode, NAMES, CASE
-from model.nsga2 import run
+from model.p3_forward import evaluate, decode, CASE
+from model.nsga2 import fast_nds, run
+from model.three_phase import ThreePhase
+from model.timestepping import ConvergenceError, advance
 
 OUT = BASE / "03_结果与图表"
 OUT.mkdir(exist_ok=True)
@@ -33,14 +35,18 @@ def make_eval(case):
 
 
 lines = ["P3 NSGA-II（pop=100, gen=80）",
-         "目标 max Q_o / min C_total；约束 p_max、纳米<=30 t、注入+焖井<=90 d"]
+         "目标 max Q_o / min C_total。粗筛使用固定流度估算的 q_max。",
+         "附件 C 仅训练档标定。τ_inj=0；等待期闭合效应待接入。",
+         "V/f 移植指数为 0.2/0.1，产水采用 WOR=0.5。NPV 为绝对值，B1 待校准。"]
 fronts = {}
 
 for case in (1, 2, 3):
-    X, F, CV, cache = run(make_eval(case), pop=100, gen=80, seed=SEED + case)
-    ok = CV <= 1e-12
+    X, F, CV, _ = run(make_eval(case), n_var=5, pop=100, gen=80, seed=SEED + case)
+    first_front, _ = fast_nds(F, CV)
+    candidates = [i for i in first_front[0] if CV[i] <= 1e-12]
     pts = []
-    for x, cv in zip(X[ok], CV[ok]):
+    for i in candidates:
+        x = X[i]
         cn, q, V, fc, ts, tau = decode(x)
         r = evaluate(case, cn, q, V, fc, ts, tau)
         pts.append([cn, q, V, fc, ts, tau, r["Q_o"], r["C_total"], r["NPV"],
@@ -48,21 +54,45 @@ for case in (1, 2, 3):
     df = pd.DataFrame(pts, columns=["cn", "q", "V", "f", "ts", "tau",
                                     "Q_o", "C_total", "NPV", "t_inj",
                                     "m_nano", "q1", "Ld"])
+    df = (df.sort_values(["Q_o", "C_total"])
+          .drop_duplicates(subset=["Q_o", "C_total"]).reset_index(drop=True))
+    df.to_csv(OUT / f"T29_pareto_case{case}.csv", index=False, encoding="utf-8-sig")
     if not df.empty:
-        df = df.sort_values("Q_o").drop_duplicates(subset=["Q_o"]).reset_index(drop=True)
-        df.to_csv(OUT / f"T29_pareto_case{case}.csv", index=False, encoding="utf-8-sig")
         fronts[case] = df
-        lines.append(f"Case{case}: 可行解 {len(df)} 个；Q_o {df.Q_o.min():.0f}–"
+        lines.append(f"Case{case}: 粗筛非支配点 {len(df)} 个；Q_o {df.Q_o.min():.0f}–"
                      f"{df.Q_o.max():.0f} m3，C_total {df.C_total.min():.0f}–"
                      f"{df.C_total.max():.0f} 万元")
     else:
         i = int(np.argmin(CV))
         cn, q, V, fc, ts, tau = decode(X[i])
-        lines.append(f"Case{case}: 无可行解；最小约束违反 {CV[i]:.3f}，"
+        lines.append(f"Case{case}: 粗筛无可行点。最小约束违反 {CV[i]:.3f}，"
                      f"对应 q={q:.0f} (q_max={CASE[case][3]:.0f})")
 
 lines.append("")
-lines.append("折中方案（膝点 + Q_o 的 25/75 分位）：")
+lines.append("折中候选（归一化理想点距离 + 产量跨度 25%/75%）：")
+def verify_pressure(case, row):
+    """Recheck the nominee over the full injection duration."""
+    model = ThreePhase(L=40.0, n=100, stretch=0.5, case=case, fg_inj=row.f,
+                       q_inj_ref=row.q / 86400, N_f=10)
+    peak = model.prm["p0"]
+    limit = model.prm["p_max"]
+
+    def record():
+        nonlocal peak
+        peak = max(peak, model.injection_pressure())
+        return peak <= limit
+
+    try:
+        while row.t_inj - model.t > 1e-12:
+            dt_s = min(0.05, row.t_inj - model.t) * 86400
+            result = advance(model, dt_s, tol=1e-9, on_step=record)
+            if result is None:
+                return "overpressure", peak / 1e6, limit / 1e6, model.t
+    except ConvergenceError:
+        return "numerical_failure", peak / 1e6, limit / 1e6, model.t
+    return "within_limit", peak / 1e6, limit / 1e6, model.t
+
+
 robust_rows = []
 for case, df in fronts.items():
     if df.empty:
@@ -73,44 +103,55 @@ for case, df in fronts.items():
     picks = [int(np.argmin(dist)),
              int(np.argmin(np.abs(qn - 0.25))),
              int(np.argmin(np.abs(qn - 0.75)))]
-    picks = sorted(set(picks))
+    picks = set(picks)
+    if len(picks) < min(2, len(df)):
+        picks.add(int(np.argmax(np.abs(qn - qn.iloc[next(iter(picks))]))))
+    picks = sorted(picks)
+    samples = np.random.default_rng(SEED + 10 * case).uniform(0.85, 1.15, (200, 3))
     for k, i in enumerate(picks, 1):
         r = df.iloc[i]
         lines.append(f"  Case{case}-S{k}: cn={r.cn:.2f}, q={r.q:.0f}, V={r.V:.0f}, "
                      f"f={r.f:.2f}, ts={r.ts:.0f}, tau={r.tau:.1f}; "
                      f"Q_o={r.Q_o:.0f}, C={r.C_total:.0f}, NPV={r.NPV:.0f}")
         # 鲁棒性
-        vals, infeas = [], 0
-        rng = np.random.default_rng(SEED + 10 * case + k)
-        for _ in range(200):
-            kr, pr, sr = rng.uniform(0.85, 1.15, 3)
+        vals = []
+        for kr, pr, sr in samples:
             rr = evaluate(case, r.cn, r.q, r.V, r.f, r.ts, r.tau,
                           k_r=kr, phi_r=pr, sh_r=sr)
             if rr["feasible"]:
                 vals.append(rr["NPV"])
-            else:
-                infeas += 1
         vals = np.array(vals)
+        pressure_status, pressure_peak, pressure_limit, pressure_time = verify_pressure(case, r)
+        print(f"Case{case}-S{k}: pressure recheck {pressure_status}", flush=True)
         robust_rows.append([case, k, r.cn, r.q, r.V, r.f, r.ts, r.tau,
                             r.Q_o, r.C_total, r.NPV,
                             len(vals) / 200.0,
                             float(np.mean(vals)) if len(vals) else np.nan,
                             float(np.std(vals)) if len(vals) else np.nan,
                             float(np.mean(np.sort(vals)[:max(1, len(vals)//10)])) if len(vals) else np.nan,
-                            float(np.mean(vals > 0)) if len(vals) else np.nan])
+                            float(np.mean(vals > 0)) if len(vals) else np.nan,
+                            float(np.count_nonzero(vals > 0) / len(samples)),
+                            pressure_status, pressure_peak, pressure_limit, pressure_time])
 
 rob = pd.DataFrame(robust_rows, columns=["case", "scheme", "cn", "q", "V", "f",
                                          "ts", "tau", "Q_o", "C_total", "NPV",
                                          "feasible_rate", "NPV_mean", "NPV_std",
-                                         "NPV_worst10", "prob_NPV_pos"])
+                                         "NPV_worst10_conditional", "prob_NPV_pos_conditional",
+                                         "prob_feasible_and_NPV_pos", "pressure_status_3phase",
+                                         "pressure_peak_MPa", "pressure_limit_MPa", "pressure_stop_d"])
 rob.to_csv(OUT / "T30_robust.csv", index=False, encoding="utf-8-sig")
 if not rob.empty:
     lines.append("")
-    lines.append("鲁棒性（±15% k/phi/sigma_h，200 次）：")
+    lines.append("粗筛鲁棒性（±15% k/phi/sigma_h，200 次，情景内共用扰动样本）：")
     for _, r in rob.iterrows():
         lines.append(f"  Case{int(r.case)}-S{int(r.scheme)}: 可行率 {r.feasible_rate:.2f}, "
-                     f"P(NPV>0)={r.prob_NPV_pos:.2f}, worst10={r.NPV_worst10:.0f}, "
-                     f"mean±sd={r.NPV_mean:.0f}±{r.NPV_std:.0f}")
+                     f"P(可行且NPV>0)={r.prob_feasible_and_NPV_pos:.2f}, "
+                     f"条件P(NPV>0)={r.prob_NPV_pos_conditional:.2f}, "
+                     f"条件worst10={r.NPV_worst10_conditional:.0f}, "
+                     f"条件mean±sd={r.NPV_mean:.0f}±{r.NPV_std:.0f}")
+        lines.append(f"    名义三相注入复核: {r.pressure_status_3phase}, "
+                     f"估算峰值/上限 {r.pressure_peak_MPa:.2f}/{r.pressure_limit_MPa:.2f} MPa, "
+                     f"停止时刻 {r.pressure_stop_d:.2f} d")
 
 # ---------------------------------------------------------------- 图
 fig, ax = plt.subplots(figsize=(6, 4))

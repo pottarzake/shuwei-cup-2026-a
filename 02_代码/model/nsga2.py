@@ -16,18 +16,16 @@ def dominates(i, j, F, CV):
 
 def fast_nds(F, CV):
     N = len(F)
-    S = [[] for _ in range(N)]
-    n = np.zeros(N, int)
+    feasible = CV <= 1e-12
+    pareto = (np.all(F[:, None] <= F[None, :], axis=2)
+              & np.any(F[:, None] < F[None, :], axis=2))
+    domination = ((feasible[:, None] & ~feasible[None, :])
+                  | (feasible[:, None] & feasible[None, :] & pareto)
+                  | (~feasible[:, None] & ~feasible[None, :] & (CV[:, None] < CV[None, :])))
+    S = [np.flatnonzero(row) for row in domination]
+    n = domination.sum(axis=0)
     rank = np.zeros(N, int)
-    fronts = [[]]
-    for p in range(N):
-        for q in range(p + 1, N):
-            if dominates(p, q, F, CV):
-                S[p].append(q); n[q] += 1
-            elif dominates(q, p, F, CV):
-                S[q].append(p); n[p] += 1
-        if n[p] == 0:
-            rank[p] = 0; fronts[0].append(p)
+    fronts = [np.flatnonzero(n == 0).tolist()]
     i = 0
     while fronts[i]:
         nxt = []
@@ -47,10 +45,10 @@ def crowding(F, idx):
         return d
     for m in range(F.shape[1]):
         order = np.argsort(F[idx, m])
-        d[order[0]] = np.inf; d[order[-1]] = np.inf
         span = F[idx[order[-1]], m] - F[idx[order[0]], m]
         if span <= 0:
             continue
+        d[order[0]] = np.inf; d[order[-1]] = np.inf
         for k in range(1, len(order) - 1):
             d[order[k]] += (F[idx[order[k + 1]], m] - F[idx[order[k - 1]], m]) / span
     return d

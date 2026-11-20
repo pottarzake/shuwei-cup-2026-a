@@ -37,12 +37,13 @@ git config core.quotepath false
 | `feat/p1-equations` | 新功能 | 合并后删除 |
 | `fix/data-split` | 修 bug | 合并后删除 |
 | `docs/readme` | 文档 | 合并后删除 |
+| `codex/<任务名>` | Codex 的功能、修复或文档改动 | 合并后删除 |
 
 规则：
 
-- **不要直接往 `main` 推**，除非只是改错别字这类一行改动
+- 所有改动先推送独立分支，再通过 PR 合入 `main`。
 - 没写完也要每天 push 到远端分支，防止本地丢失
-- 合并走 Pull Request，另一人看一眼再合；紧急情况下可直接合并，但要在群里说一声
+- 提交 Pull Request 后由队友审查并合并。
 
 ---
 
@@ -52,7 +53,7 @@ git config core.quotepath false
 
 ```bash
 git switch main
-git pull --rebase origin main
+git pull --ff-only origin main
 git switch -c feat/p3-nsga2      # 建自己的分支
 ```
 
@@ -64,16 +65,7 @@ git commit -m "P3: NSGA-II 初版跑通，Pareto 前沿保存在 03_结果与图
 git push -u origin feat/p3-nsga2
 ```
 
-**收工前：**
-
-```bash
-git switch main
-git pull --rebase origin main
-git merge feat/p3-nsga2
-git push origin main
-```
-
-或者到 GitHub 上开 PR，让队友 review 后再 squash merge。
+**提交审查**。在 GitHub 上从功能分支向 `main` 发起 PR，由队友审查后合并。
 
 ---
 
@@ -181,7 +173,7 @@ git pull --rebase origin main
 ## 9. 禁止事项
 
 - 提交 API key、账号密码、`.env` 文件
-- `git push -f` 覆盖 `main`
+- 直接推送 `main`，包括使用 `--force` 或 `--force-with-lease`
 - 把赛题 PDF、论文、代码转发到公开渠道（比赛期间仓库保持私有）
 - 论文正文与附录出现学校、姓名、导师等身份信息
 - 提交 `.venv/`、`__pycache__/`、LaTeX 编译中间产物（已在 `.gitignore` 中排除）
