@@ -66,6 +66,8 @@ controlled by injected volume, CO$_2$ fraction and nano concentration
 
 % 生成首页（摘要页）
 \maketitle
+% 页眉总页数只统计正文（不含摘要、目录、附录）
+\rhead{Page \thepage\ of \pageref{LastMainPage}}
 % 目录
 \tableofcontents
 
@@ -84,9 +86,11 @@ controlled by injected volume, CO$_2$ fraction and nano concentration
 
 %----------------------------参考文献
 \input{sections/09_references}
+\label{LastMainPage}
 
 % ---------------------附录（推导、代码清单、补充图表）
 \newpage
+\pagestyle{plain}
 \section*{Appendix}
 \addcontentsline{toc}{section}{Appendix}
 \subsection*{A.1 Mirror-kernel derivation}
