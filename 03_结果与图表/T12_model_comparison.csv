@@ -1,0 +1,5 @@
+model,cv_rmse_mean,cv_rmse_max,cv_mape_mean,cv_spearman,val_rmse,val_mape,val_spearman
+GP,56.6,167.0,5.16,0.99,14.8,1.61,0.983
+GBM,185.1,536.9,12.99,1.0,14.3,0.78,1.0
+quadratic,309.6,763.8,47.5,1.0,286.9,14.53,1.0
+RF,342.5,629.2,44.65,0.981,280.7,37.85,0.983

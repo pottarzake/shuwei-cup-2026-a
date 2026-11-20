@@ -1,0 +1,4 @@
+case,I1_Q360_m3,I2_NPV_10kCNY,I3_cost_per_m3,I4_soak_gain,I5_nano_slope,I6_be_margin,I7_test_mape_pct,ts_star_used
+Case1,223.2,-720.5,3.5685,1.449,21.3,0.094,3.15,10
+Case2,1236.1,-448.6,0.6982,2.028,108.1,0.479,1.53,20
+Case3,3511.7,178.9,0.2821,2.463,319.9,1.181,1.33,35
