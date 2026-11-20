@@ -1,0 +1,13 @@
+Case3, N_f=10, q=300 m3/d, f_CO2=0.5, L=40 m, n=50
+threshold C = 0.0001 (0.01 wt%)
+t=1 d: C_face=1.619e-06, C_max=1.619e-06, r(0.01wt%)=0.00 m, ads_frac=0.998, rel_res=1.2e-09
+t=5 d: C_face=1.032e-05, C_max=1.032e-05, r(0.01wt%)=0.00 m, ads_frac=0.997, rel_res=1.7e-09
+t=10 d: C_face=3.142e-05, C_max=3.142e-05, r(0.01wt%)=0.00 m, ads_frac=0.995, rel_res=1.2e-09
+
+K_d sensitivity at 1 d:
+  K_d=0.01: C_face=1.62e-06, r(0.01wt%)=0.00 m, r(1e-5)=0.00 m, ads_frac=0.998
+  K_d=0.005: C_face=3.23e-06, r(0.01wt%)=0.00 m, r(1e-5)=0.00 m, ads_frac=0.996
+  K_d=0.002: C_face=8.03e-06, r(0.01wt%)=0.00 m, r(1e-5)=0.00 m, ads_frac=0.991
+  K_d=0.001: C_face=1.59e-05, r(0.01wt%)=0.00 m, r(1e-5)=0.20 m, ads_frac=0.981
+
+结论：题给 K_d=0.01 m3/kg 下 C_face~1.6e-6，比 0.01 wt% 阈值低约 60 倍；即使 K_d 降到 0.001，C_face 仍 <1e-4。0.01 wt% 纳米半径在题给范围内恒为 0。需核对 K_d 单位（m3/kg vs L/kg）或放宽吸附假设。
