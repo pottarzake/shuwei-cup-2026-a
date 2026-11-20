@@ -5,8 +5,8 @@ T35 全局敏感性分析（Sobol，Saltelli N=1024，含二阶指数）
 前置交付：sobol_lib.py 纯 numpy 实现 Saltelli (2010) 采样与估计量（替代 SALib），
 Ishigami 解析解自检通过后进入正题。
 
-正演接口：model/p3_forward（T22 数据标定 Q1(ts)/Ld(ts) + V/f 缩放假设，
-exp_v=0.2、exp_f=0.1，tau=0 基准）。model/ 目录只读，故本脚本以全向量化方式
+正演接口：model/p3_forward（T22 数据标定 Q1(ts)/Ld(ts) + V/f 缩放，
+指数由 T31 标定为 ≈0，tau=0 基准）。model/ 目录只读，故本脚本以全向量化方式
 复刻 evaluate() 的数学（_batch_eval），并在运行前用 600 组随机点对拍
 p3_forward.evaluate 验证数值一致（max rel err < 1e-9），不改动 model/。
 
@@ -25,6 +25,7 @@ p3_forward.evaluate 验证数值一致（max rel err < 1e-9），不改动 model
   T35_sobol_npvstar_case{1,2,3}.csv / T35_sobol_report.txt / T35_sobol.png
 """
 
+import inspect
 import os
 import sys
 import time
@@ -47,6 +48,13 @@ N_SALTELLI = 1024
 SEED = 2026
 TS_GRID = np.arange(5.0, 61.0, 5.0)   # 焖井扫描档 12 档
 _CHUNK = 4096                          # 批处理行数（内存控制）
+
+# V/f 缩放指数：从 p3_forward.evaluate 的默认形参自动读取（T31 标定为 ≈0，
+# 之后若再标定只需改 p3_forward，本脚本自动跟随；对拍自检兜底）。
+_SIG = inspect.signature(p3_forward.evaluate)
+_EXP_V = float(_SIG.parameters["exp_v"].default)
+_EXP_F = float(_SIG.parameters["exp_f"].default)
+
 
 # ---------------------------------------------------------------- 参数定义
 # (名称, 下界, 上界, 形参含义)
@@ -80,7 +88,7 @@ def _DF(d):
 
 
 def _batch_eval(case, cn, q, V, f, ts, k_r, phi_r, sh_r):
-    """全向量化复刻 p3_forward.evaluate(tau=0, exp_v=0.2, exp_f=0.1, wor=0.5)。
+    """全向量化复刻 p3_forward.evaluate(tau=0, wor=0.5, 指数取其默认形参)。
 
     所有输入 (M,) 数组；返回 dict(Q_o, NPV, feasible, violation)。分块控内存。
     """
@@ -114,9 +122,9 @@ def _batch_eval(case, cn, q, V, f, ts, k_r, phi_r, sh_r):
                                np.maximum(m_nano - eco.NANO_LIMIT_T, 0.0)
                                / eco.NANO_LIMIT_T, 0.0)
 
-        # 生产剖面
-        sv = (vv / 3000.0) ** 0.2
-        sf = (ff / 0.5) ** 0.1
+        # 生产剖面（V/f 缩放指数由 p3_forward 默认形参决定，T31 后 ≈0）
+        sv = (vv / 3000.0) ** _EXP_V
+        sf = (ff / 0.5) ** _EXP_F
         q1 = (a_["q_a"] + a_["q_b"] * (1.0 - np.exp(-tt / a_["q_c"]))) \
             * sv * sf * np.sqrt(kr)
         Ld = (a_["Ld_a"] + a_["Ld_b"] * (1.0 - np.exp(-tt / a_["Ld_c"]))) * sv * sf
@@ -127,8 +135,12 @@ def _batch_eval(case, cn, q, V, f, ts, k_r, phi_r, sh_r):
         q1s = q1 * scale
         with np.errstate(divide="ignore", invalid="ignore"):
             tau = np.where(q1s > 0.0, Vo / np.maximum(q1s, 1e-300), np.inf)
-        t = np.arange(1.0, 361.0)
-        oil = q1s[:, None] * np.exp(-t[None, :] / tau[:, None])
+            # 2026-11-20 T22 改版：油率为日内均值（闭合因子），日起点 0..359
+            day_factor = np.where(np.isfinite(tau),
+                                  -tau * np.expm1(-1.0 / tau), 1.0)
+        t = np.arange(360.0)
+        oil = q1s[:, None] * day_factor[:, None] \
+            * np.exp(-t[None, :] / tau[:, None])
         oil = np.nan_to_num(oil)
         water = 0.5 * oil
         Q_o = oil.sum(axis=1)
@@ -151,7 +163,7 @@ def _batch_eval(case, cn, q, V, f, ts, k_r, phi_r, sh_r):
         soak = -eco.C_SOAK * _DF(t_inj) \
             * (cum2[n_s] + np.where(fr_s > 1e-9, fr_s * _DF(n_s + fr_s), 0.0))
         start = t_inj + tt
-        days = start[:, None] + t[None, :]
+        days = start[:, None] + np.arange(1.0, 361.0)[None, :]
         cf = (eco.P_OIL_STAR - eco.C_PROD) * oil - eco.C_WATER * water
         npv = -eco.C_FRAC + inj + soak + (cf * _DF(days)).sum(axis=1)
 
@@ -340,7 +352,8 @@ def main():
             lines.append(f"  Case{case}: " + "; ".join(
                 f"{n}={v:.3f}" for n, v in _top3(names_t, r_t["ST"])))
     lines.append("局限: E、sigma_H、rho_nf 在降阶正演中为惰性参数(指数≈0);"
-                 " tau=0、exp_v=0.2、exp_f=0.1 为基准; 待 T34 机理外壳接入后复跑。")
+                 " tau=0 基准; V/f 缩放指数已按 T31 标定取 %.3f/%.3f;"
+                 " 待 T34 机理外壳接入后复跑。" % (_EXP_V, _EXP_F))
     _write(lines)
     _plot(results, names_q, names_t)
     print("\n".join(lines))
