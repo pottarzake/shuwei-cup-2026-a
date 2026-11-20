@@ -45,7 +45,7 @@ def _sat(t, a, b, c):
 
 
 def evaluate(case, cn, q, V, f, ts, tau, exp_v=0.0, exp_f=0.0, wor=0.5,
-             k_r=1.0, phi_r=1.0, sh_r=1.0):
+             k_r=1.0, phi_r=1.0, sh_r=1.0, frac_mult=1.0):
     area, phi, movable, qmax0 = CASE[case]
     qmax = qmax0 * k_r / (sh_r ** 0.5)
     phi = phi * phi_r
@@ -65,7 +65,7 @@ def evaluate(case, cn, q, V, f, ts, tau, exp_v=0.0, exp_f=0.0, wor=0.5,
     # 数据标定的基准 + V/f 缩放
     sv = (V / 3000.0) ** exp_v
     sf = (f / 0.5) ** exp_f
-    q1 = _sat(ts, r["q_a"], r["q_b"], r["q_c"]) * sv * sf * (k_r ** 0.5)
+    q1 = _sat(ts, r["q_a"], r["q_b"], r["q_c"]) * sv * sf * (k_r ** 0.5) * frac_mult
     Ld = _sat(ts, r["Ld_a"], r["Ld_b"], r["Ld_c"]) * sv * sf
     V_o = area * Ld * phi * movable
 

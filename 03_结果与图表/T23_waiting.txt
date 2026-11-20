@@ -1,0 +1,8 @@
+T23 等待期：缝宽闭合与 NPV 影响
+p_f(tau)=p0+(p_f-p0)e^{-tau/tau_c}, tau_c=2 d
+w=w_inf+(w0-w_inf)e^{-c_c(sigma_n-sigma_n0)}, c_c=0.05 MPa^-1, w_inf=0.2w0
+导流折减 = (w/w0)^3
+Case2: tau=0 -> w=4.00 mm, NPV=-89; tau=15 -> w=2.56 mm, k_mult=0.261, NPV_total=-150 (delay-only -89, cond-only -150)
+Case3: tau=0 -> w=5.00 mm, NPV=645; tau=15 -> w=3.04 mm, k_mult=0.224, NPV_total=376 (delay-only 645, cond-only 376)
+
+tau_c、c_c、w_inf 为假设值，不是附件 C 标定结果；结论只说明趋势与量级。

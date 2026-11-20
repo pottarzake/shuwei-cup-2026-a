@@ -190,6 +190,54 @@ nominal parameters: the estimated peak pressures are
 $50.75$--$50.76$~MPa for Case~2 (limit $57$~MPa) and
 $52.67$--$52.70$~MPa for Case~3 (limit $60$~MPa).
 
+\subsection{Injection Timing and Fracture Closure}
+\label{sec:p3_waiting}
+
+After fracturing, the fracture pressure decays from the breakdown pressure to
+the initial pore pressure during the waiting period:
+\begin{equation}
+p_f(\tau)=p_0+\left(p_f-p_0\right)e^{-\tau/\tau_c},\qquad
+\sigma'_n(\tau)=\sigma_h-\alpha p_f(\tau).
+\label{eq:waiting_p}
+\end{equation}
+The aperture follows the compliance law used for unpropped fractures
+\cite{p1-07,p1-11},
+\begin{equation}
+w(\sigma'_n)=w_\infty+\left(w_0-w_\infty\right)
+e^{-c_c\left(\sigma'_n-\sigma'_{n0}\right)},
+\label{eq:waiting_w}
+\end{equation}
+and the cubic law gives the conductivity multiplier $(w/w_0)^3$. We use
+$\tau_c=2$~d, $c_c=0.05$~MPa$^{-1}$ and $w_\infty=0.2w_0$ as baseline
+assumptions; these parameters are not identified by Attachment~C.
+
+\begin{table}[h!t]
+\centering
+\caption{Effect of a 15-day waiting period on aperture, conductivity and NPV.}
+\label{tbl:waiting}
+\small
+\begin{tabular}{lcccc}
+\toprule[1.5pt]
+Case & $w$ at $\tau=0/15$~d (mm) & $k$-multiplier & NPV total
+& Delay-only NPV\\
+\midrule[1pt]
+2 & 4.00 / 2.56 & 0.261 & $-150$ & $-89$\\
+3 & 5.00 / 3.04 & 0.224 & $+376$ & $+645$\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+At $\tau=15$~d the total NPV falls from $-89$ to $-150\times10^4$~CNY in
+Case~2 and from $+645$ to $+376\times10^4$~CNY in Case~3. The delay-only path
+changes by less than $1\%$, because 15~d of discounting at $8\%$/yr is
+negligible. The waiting period is therefore harmful mainly through fracture
+closure, not through discounting. A sensitivity on the compliance coefficient
+at $\tau=15$~d gives NPV $595$, $376$ and $17\times10^4$~CNY for
+$c_c=0.02$, $0.05$ and $0.10$~MPa$^{-1}$; changing $\tau_c$ between 1 and
+5~d moves the result by less than $6\%$. The sign and the recommendation
+$\tau_{inj}=0$ are robust, but the magnitude is controlled by the uncalibrated
+compliance coefficient.
+
 \subsection{Discussion and Limitations}
 \label{sec:p3_limits}
 
