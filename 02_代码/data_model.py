@@ -93,6 +93,26 @@ def check_split(g):
 
 # ---------------- 基线模型（numpy，无 sklearn） ----------------
 
+def build_features(g, style="zg"):
+    """P4 模型统一特征入口（2026-11-20 起全部脚本必须走这里，勿各自实现）。
+
+    style="zg"（默认，总纲 6.3 口径）：[C_n, t_s, C_n·t_s, log t_s, I(Case2), I(Case3)]
+    style="simple"（早期对照）：[C_n, t_s, I(Case2), I(Case3)]
+    返回 (X, y)。
+    """
+    cn = g["cn"].to_numpy(float)
+    ts = g["ts"].to_numpy(float)
+    i2 = (g["case"] == "Case2").astype(float)
+    i3 = (g["case"] == "Case3").astype(float)
+    if style == "zg":
+        X = np.column_stack([cn, ts, cn * ts, np.log(ts), i2, i3])
+    elif style == "simple":
+        X = np.column_stack([cn, ts, i2, i3])
+    else:
+        raise ValueError(style)
+    return X, g["Q360"].to_numpy(float)
+
+
 def _design(g):
     """特征：[1, cn, ts, I(Case2), I(Case3)]；另附 log(ts) 增强版供 T12 参考。"""
     X = np.column_stack([

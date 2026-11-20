@@ -29,19 +29,12 @@ OUT_DIR = os.path.join(WS, "03_结果与图表")
 
 
 def features_simple(g):
-    return np.column_stack([
-        g["cn"].to_numpy(float), g["ts"].to_numpy(float),
-        (g["case"] == "Case2").astype(float),
-        (g["case"] == "Case3").astype(float)]), g["Q360"].to_numpy(float)
+    return data_model.build_features(g, style="simple")
 
 
 def features_63(g):
-    """总纲 6.3 指定特征集"""
-    cn, ts = g["cn"].to_numpy(float), g["ts"].to_numpy(float)
-    return np.column_stack([cn, ts, cn * ts, np.log(ts),
-                            (g["case"] == "Case2").astype(float),
-                            (g["case"] == "Case3").astype(float)]), \
-        g["Q360"].to_numpy(float)
+    """总纲 6.3 指定特征集（统一入口）"""
+    return data_model.build_features(g, style="zg")
 
 
 def cv_rmse(feat_fn, gtr, n=8):
@@ -64,14 +57,15 @@ def main():
     c_mean, c_max = cv_rmse(features_63, gtr)
 
     # ---- 数据侧曲线 + 产量口径 ts* ----
-    model = ml_lib.GaussianProcessRBF().fit(*features_simple(gtr))
+    model = ml_lib.GaussianProcessRBF().fit(*features_63(gtr))
     ts_grid = np.arange(5, 61, 1.0)
     rows = []
     ts_star_prod = {}
     for case in ["Case1", "Case2", "Case3"]:
         i2 = 1.0 if case == "Case2" else 0.0
         i3 = 1.0 if case == "Case3" else 0.0
-        Xg = np.column_stack([np.full_like(ts_grid, 1.0), ts_grid,
+        cn1 = np.full_like(ts_grid, 1.0)
+        Xg = np.column_stack([cn1, ts_grid, cn1 * ts_grid, np.log(ts_grid),
                               np.full_like(ts_grid, i2),
                               np.full_like(ts_grid, i3)])
         q_pred = model.predict(Xg)

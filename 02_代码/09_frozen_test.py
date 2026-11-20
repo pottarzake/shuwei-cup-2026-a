@@ -20,13 +20,8 @@ OUT_DIR = os.path.join(WS, "03_结果与图表")
 
 
 def features(g):
-    X = np.column_stack([
-        g["cn"].to_numpy(float),
-        g["ts"].to_numpy(float),
-        (g["case"] == "Case2").astype(float),
-        (g["case"] == "Case3").astype(float),
-    ])
-    return X, g["Q360"].to_numpy(float)
+    # 统一走总纲 6.3 特征集（2026-11-20 起）
+    return data_model.build_features(g, style="zg")
 
 
 def main():
@@ -81,8 +76,8 @@ def main():
     plt.close(fig)
 
     L = ["T13 模型选择与冻结测试  (2026-11-20)", "=" * 60,
-         "选定模型: GP (T12 依据: CV RMSE 56.6 最低, val MAPE 1.61%)",
-         "冻结: X=[cn, ts, I(Case2), I(Case3)]; 超参网格同 T12; 只用训练 72 组拟合",
+         "选定模型: GP (T12 依据: CV RMSE 25.1 最低, val MAPE 1.59%)",
+         "冻结: X=[cn, ts, cn*ts, log ts, I(Case2), I(Case3)] (总纲6.3); 超参网格同 T12; 只用训练 72 组拟合",
          "协议: 测试集只评估这一次 (15/45 区间留档, 60 外推)"]
     for split, lab in [("test_interp", "区间内留档 t_s=15/45"),
                        ("test_extrap", "外推 t_s=60")]:

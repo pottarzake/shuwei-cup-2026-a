@@ -18,17 +18,12 @@ import ml_lib
 
 WS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(WS, "03_结果与图表")
-FEATS = ["$C_n$", "$t_s$", "I(Case2)", "I(Case3)"]
+FEATS = ["$C_n$", "$t_s$", "$C_n t_s$", "$\\log t_s$", "I(Case2)", "I(Case3)"]
 
 
 def features(g):
-    X = np.column_stack([
-        g["cn"].to_numpy(float),
-        g["ts"].to_numpy(float),
-        (g["case"] == "Case2").astype(float),
-        (g["case"] == "Case3").astype(float),
-    ])
-    return X, g["Q360"].to_numpy(float)
+    # 统一走总纲 6.3 特征集（2026-11-20 起）
+    return data_model.build_features(g, style="zg")
 
 
 def main():
