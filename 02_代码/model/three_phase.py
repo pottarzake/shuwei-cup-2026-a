@@ -100,6 +100,7 @@ def build_prm(case=0, fg_inj=0.5, N_f=10):
         "krg0": 1.0, "ng": 2.0, "Sgc": 0.0,
         "fg_inj": fg_inj, "fw_inj": 1.0 - fg_inj,
         "p_max": c["p_max"],
+        "p_wf": c["p_wf"],
         "N_f": N_f,
     }
 

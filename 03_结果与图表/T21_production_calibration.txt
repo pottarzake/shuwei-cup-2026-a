@@ -1,0 +1,13 @@
+Case3, N_f=10, q=300, L=40, n=100, t_inj=10, t_soak=30
+data Q360 = 3434.0 m3 (Cn=1.0, ts=30)
+injection end: t=10.00, p_face=52.82 MPa
+soak end: t=40.00, p_avg=48.05 MPa, Sw_avg=0.285, Sg_avg=0.0050
+area=112000 m2, V_bulk=4.480e+06 m3
+q_i_o=97.932 m3/d, q_i_w=2.068 m3/d
+V_o=2.972e+05 m3, tau=3034.8 d
+Q_o(eta=1)=33244.7 m3
+calibration eta = 0.1033
+effective drained length L_d = 0.462 m (calibrated, eta=1)
+Q_o(L_d)=3434.0 m3, q_i_o=97.93 m3/d, tau=35.1 d
+
+说明：绝对量级由单点标定；P3 只用相对趋势。其他情景的 eta 需分别标定，且 Case1/2 的基准注入在压力约束下不可行。
