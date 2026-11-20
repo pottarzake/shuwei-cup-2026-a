@@ -1,4 +1,5 @@
-Kd=2e-05 m3/kg (= 0.02 L/kg): C_face=3.378e-03, r(0.01wt%)=0.61 m, r(1e-5)=1.02 m, ads_frac=0.412, rel_res=2.8e-15
-Kd=1e-05 m3/kg (= 0.01 L/kg): C_face=4.025e-03, r(0.01wt%)=0.61 m, r(1e-5)=1.02 m, ads_frac=0.275, rel_res=0.0e+00
-Kd=5e-06 m3/kg (= 0.005 L/kg): C_face=4.502e-03, r(0.01wt%)=0.61 m, r(1e-5)=1.02 m, ads_frac=0.166, rel_res=2.8e-16
-elapsed=149s
+Case3, N_f=10, q=300 m3/d, n=50, injection only, 10 d.
+L/kg interpretation sensitivity. Radius is the farthest qualifying cell center.
+Kd=0.02 L/kg: C_first_cell=3.373e-03, radius=0.61 m, ads_frac=0.412, rel_res=6.75e-12
+Kd=0.01 L/kg: C_first_cell=4.020e-03, radius=0.61 m, ads_frac=0.275, rel_res=5.56e-13
+Kd=0.005 L/kg: C_first_cell=4.496e-03, radius=0.61 m, ads_frac=0.166, rel_res=2.17e-14

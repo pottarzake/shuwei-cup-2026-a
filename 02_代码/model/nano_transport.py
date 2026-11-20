@@ -15,7 +15,8 @@ T11：纳米颗粒在水相中的输运 + Langmuir 吸附（算子分裂）。
 import numpy as np
 from scipy.linalg import solve_banded
 
-from .three_phase import ThreePhase, pc, phi_of, rho_w_of, _lam_w
+from .three_phase import ThreePhase, pc, phi_of, rho_w_of
+from .timestepping import ConvergenceError
 
 
 class NanoTransport:
@@ -60,6 +61,8 @@ class NanoTransport:
         return self.Ca_max * self.KL * rho_w / (1.0 + self.KL * Cw) ** 2
 
     def stored(self):
+        if self._phi_old is None:
+            return 0.0, 0.0
         phi = np.array([phi_of(p, self.prm) for p in self._P])
         rho_w = np.array([rho_w_of(p - pc(s, self.prm), self.prm)
                           for p, s in zip(self._P, self._Sw)])
@@ -68,39 +71,16 @@ class NanoTransport:
                      self.Ca_of(self.C, rho_w))
         return water, ads
 
-    # -------------------------------------------------------------- 速度
-    def _velocities(self, model):
+    def step(self, dt_s, model, maxit=20, tol=1e-10):
         prm = self.prm
         P, Sw, Sg = model.P, model.Sw, model.Sg
-        pw = P - np.array([pc(s, prm) for s in Sw])
-        rho_w = np.array([rho_w_of(p, prm) for p in pw])
-
-        vf = np.zeros(self.N - 1)
-        for f in range(self.N - 1):
-            if pw[f] >= pw[f + 1]:
-                lam, rw = _lam_w(Sw[f], prm), rho_w[f]
-            else:
-                lam, rw = _lam_w(Sw[f + 1], prm), rho_w[f + 1]
-            vf[f] = -lam * (pw[f + 1] - pw[f]) / self.dxf[f]
-
-        v_left = model.v_inj * prm["fw_inj"]
-        p_end = prm["p_end"]
-        if P[-1] >= p_end:
-            pw_bc = p_end - pc(Sw[-1], prm)
-            lam = _lam_w(Sw[-1], prm)
-            v_right = -lam * (pw_bc - pw[-1]) / (0.5 * self.dx[-1])
-        else:
-            v_right = 0.0
-        return vf, v_left, v_right, pw, rho_w
-
-    # -------------------------------------------------------------- 单步
-    def step(self, dt_s, model, maxit=20, tol=1e-10):
-        self._P = model.P
-        self._Sw = model.Sw
-        prm = self.prm
-        phi = np.array([phi_of(p, prm) for p in model.P])
-        Sw = model.Sw
-        vf, v_left, v_right, pw, rho_w = self._velocities(model)
+        phi = phi_of(P, prm)
+        rho_w = rho_w_of(P - pc(Sw, prm), prm)
+        # Advect with the water mass fluxes accepted by the flow solver.
+        water_flux = [model._face(i, i + 1, P, Sw, Sg)[0]
+                      for i in range(self.N - 1)]
+        nano_in = model._injection_flux()[0] * self.C_inj
+        water_out = max(model._right_boundary(self.N - 1, P, Sw, Sg)[0], 0.0)
 
         # 面扩散系数
         Df = np.zeros(self.N - 1)
@@ -119,26 +99,20 @@ class NanoTransport:
                     + rho_r * (1.0 - ph) * self.Ca_of(Ci, rwi))
 
         # 旧的孔隙度/饱和度/密度必须用上一步的值，否则算子分裂会破坏守恒
-        if self._phi_old is None:
-            self._phi_old = phi.copy()
-            self._Sw_old = Sw.copy()
-            self._rho_old = rho_w.copy()
-        A0 = np.array([accum(Cold[i], self._phi_old[i], self._Sw_old[i],
-                             self._rho_old[i]) for i in range(self.N)])
+        phi_old = phi if self._phi_old is None else self._phi_old
+        sw_old = Sw if self._phi_old is None else self._Sw_old
+        rho_old = rho_w if self._phi_old is None else self._rho_old
+        A0 = accum(Cold, phi_old, sw_old, rho_old)
+        scale = max(abs(nano_in) * dt_s, np.sum(self.dx * np.abs(A0)), 1e-30)
 
         def face_flux(f, Cl, Cr):
-            """面 f 的纳米通量，返回 (F, dF/dCl, dF/dCr)。"""
-            v = vf[f]
-            if v >= 0:
-                F = rho_w[f] * Cl * v
-                dFl, dFr = rho_w[f] * v, 0.0
-            else:
-                F = rho_w[f + 1] * Cr * v
-                dFl, dFr = 0.0, rho_w[f + 1] * v
-            F -= Df[f] * (Cr - Cl)
-            return F, dFl + Df[f], dFr - Df[f]
+            """面通量及其对左右浓度的导数。"""
+            positive = max(water_flux[f], 0.0)
+            negative = min(water_flux[f], 0.0)
+            left, right = positive + Df[f], negative - Df[f]
+            return left * Cl + right * Cr, left, right
 
-        for it in range(1, maxit + 1):
+        for it in range(maxit + 1):
             rows = np.zeros(self.N)
             lower = np.zeros(self.N)
             upper = np.zeros(self.N)
@@ -153,17 +127,13 @@ class NanoTransport:
 
                 # 左面
                 if i == 0:
-                    FL = rho_w[0] * v_left * self.C_inj
+                    FL = nano_in
                     dFL_dCi = 0.0
                 else:
                     FL, dFL_dCl, dFL_dCi = face_flux(i - 1, C[i - 1], Ci)
                 # 右面
                 if i == self.N - 1:
-                    if v_right >= 0:
-                        FR = rho_w[-1] * Ci * v_right
-                        dFR_dCi = rho_w[-1] * v_right
-                    else:
-                        FR, dFR_dCi = 0.0, 0.0
+                    FR, dFR_dCi = water_out * Ci, water_out
                 else:
                     FR, dFR_dCi, dFR_dCr = face_flux(i, Ci, C[i + 1])
 
@@ -174,6 +144,12 @@ class NanoTransport:
                     upper[i] = dFR_dCr
                 rhs[i] = -(r + FR - FL)
 
+            relative = np.sum(np.abs(rhs)) * dt_s / scale
+            if relative <= tol:
+                break
+            if it == maxit or not np.isfinite(relative):
+                raise ConvergenceError(f"Nano transport residual {relative:.2e} exceeds tolerance {tol:.2e}")
+
             ab = np.zeros((3, self.N))
             ab[0, 1:] = upper[:-1]
             ab[1, :] = rows
@@ -181,16 +157,13 @@ class NanoTransport:
             dC = solve_banded((1, 1), ab, rhs)
             C = np.clip(C + dC, 0.0, 0.2)
 
-            if np.max(np.abs(dC)) < tol * max(1.0, np.max(C)):
-                break
-
+        self._P, self._Sw = P, Sw
         self.C = C
         self._phi_old = phi.copy()
         self._Sw_old = Sw.copy()
         self._rho_old = rho_w.copy()
-        self.mass_in += rho_w[0] * v_left * self.C_inj * dt_s
-        if v_right >= 0:
-            self.mass_out += rho_w[-1] * C[-1] * v_right * dt_s
+        self.mass_in += nano_in * dt_s
+        self.mass_out += water_out * C[-1] * dt_s
         return it
 
     def mass_balance(self):
@@ -213,9 +186,16 @@ class ThreePhaseNano(ThreePhase):
                                   config.case_params(case),
                                   beta_s=beta_s, mode=nano_mode)
 
-    def step(self, dt_s, **kwargs):
+    def step(self, dt_s, *, nano_maxit=20, nano_tol=1e-10, **kwargs):
+        flow_state = self.P, self.Sw, self.Sg, self.t
+        mass_in, mass_out = self.mass_in.copy(), self.mass_out.copy()
         it, err = super().step(dt_s, **kwargs)
-        self.nano.step(dt_s, self)
+        try:
+            self.nano.step(dt_s, self, maxit=nano_maxit, tol=nano_tol)
+        except (ConvergenceError, np.linalg.LinAlgError) as error:
+            self.P, self.Sw, self.Sg, self.t = flow_state
+            self.mass_in, self.mass_out = mass_in, mass_out
+            raise ConvergenceError(str(error)) from error
         return it, err
 
     def mass_balance(self):

@@ -1,0 +1,25 @@
+T11 纳米半径网格加密复核（2026-11-20）
+Case3, N_f=10, q=300 m3/d, f_CO2=0.5, L=40 m, 10 d injection, Langmuir
+
+半径定义：C_n >= 1e-4（0.01 wt%）。
+r_cellcenter = 达标的最远单元中心；r_interp = 在最后一个达标单元与下一个单元之间线性插值。
+
+== 主模型：Kd = 0.01 m3/kg（题给单位）==
+n=50   : C_first=3.134e-05, r_cellcenter=0.000 m, r_interp=0.000 m
+n=200  : C_first=7.041e-03, r_cellcenter=0.050 m, r_interp=0.149 m
+
+结论：n=50 的“零半径”是粗网格假象。近缝纳米边界层很薄，n=50 的首单元厚 0.2–0.4 m，
+把注入浓度抹平约两个数量级。n=200 下半径为 0.15 m（插值），尚未完全收敛。
+
+== L/kg 解释：Kd = 1e-5 m3/kg（= 0.01 L/kg）==
+n=50   : C_first=4.020e-03, r_cellcenter=0.605 m, r_interp=0.977 m, dx_front~0.410 m
+n=100  : C_first=6.347e-03, r_cellcenter=0.505 m, r_interp=0.688 m, dx_front~0.205 m
+n=200  : C_first=8.619e-03, r_cellcenter=0.455 m, r_interp=0.523 m, dx_front~0.103 m
+
+结论：0.61 m 是 n=50 单元中心造成的巧合；插值后 0.98→0.69→0.52 m，仍在下降，
+外推约 0.3 m。三档 K_d 在 n=50 落到同一单元，不能据此判定“对 K_d 不敏感”。
+
+质量守恒（相对）：主模型 n=200 为 9.6e-12；L/kg 三档为 5.6e-13 至 2.4e-12。
+
+适用范围：Case3 注入期 10 d、Langmuir、C_a,max=0.5×饱水基准存量。
+焖井期、其他情景、线性等温线对照与饱和容量敏感性仍待验证。
