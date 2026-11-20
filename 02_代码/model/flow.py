@@ -8,6 +8,8 @@
 有限体积 + 向后 Euler + 三对角求解。
 """
 
+from math import isfinite
+
 import numpy as np
 from scipy.linalg import solve_banded
 
@@ -20,51 +22,61 @@ def solve_diffusion(L, D, p0, pL, pR, t_end, dt, n=400, first=None,
     返回 (xc, p, history)
     history 仅在 store=True 时给出 [(t, p_array), ...]
     """
-    xf, xc, dx = make_grid(L, n, stretch=stretch, first=first)
+    if not isfinite(D) or D <= 0:
+        raise ValueError("D must be positive and finite")
+    if not isfinite(dt) or dt <= 0:
+        raise ValueError("dt must be positive and finite")
+    if not isfinite(t_end) or t_end < 0:
+        raise ValueError("t_end must be nonnegative and finite")
+    _, xc, dx = make_grid(L, n, stretch=stretch, first=first)
     N = len(dx)
 
     # 界面距离
     dx_face = 0.5 * (dx[:-1] + dx[1:])          # 内部界面，长度 N-1
 
     p = np.full(N, float(p0))
-    nstep = int(round(t_end / dt))
     hist = []
+    operator = np.zeros((3, N))
+    left_rates = D / (dx[1:] * dx_face)
+    right_rates = D / (dx[:-1] * dx_face)
+    operator[0, 1:] = -right_rates
+    operator[2, :-1] = -left_rates
+    operator[1, 1:] = left_rates
+    operator[1, :-1] += right_rates
+    boundary_left = 2.0 * D / dx[0]**2
+    boundary_right = 2.0 * D / dx[-1]**2
+    operator[1, 0] += boundary_left
+    operator[1, -1] += boundary_right
+    forcing = np.zeros(N)
+    forcing[0] += boundary_left * pL
+    forcing[-1] += boundary_right * pR
 
-    for step in range(1, nstep + 1):
-        # 三对角系数：-a_i p_{i-1} + b_i p_i - c_i p_{i+1} = rhs_i
-        a = np.zeros(N)
-        b = np.zeros(N)
-        c = np.zeros(N)
-        rhs = p.copy()
+    def step_matrix(step_size):
+        matrix = operator * step_size
+        matrix[1] += 1.0
+        return matrix
 
-        # 内部单元 i=1..N-2
-        a[1:N-1] = D * dt / (dx[1:N-1] * dx_face[0:N-2])
-        c[1:N-1] = D * dt / (dx[1:N-1] * dx_face[1:N-1])
-        b[1:N-1] = 1.0 + a[1:N-1] + c[1:N-1]
+    full_matrix = step_matrix(dt)
+    elapsed = 0.0
+    step = 0
+    while elapsed < t_end:
+        step += 1
+        target = min(step * dt, t_end)
+        if target == step * dt:
+            step_size = dt
+            matrix = full_matrix
+        else:
+            step_size = target - elapsed
+            matrix = step_matrix(step_size)
 
-        # 左边界：x=0 定压，距首单元中心 dx0/2
-        a[0] = 0.0
-        c[0] = D * dt / (dx[0] * dx_face[0])              # 到单元 1
-        b_left = D * dt / (dx[0] * (0.5 * dx[0]))         # 到边界
-        b[0] = 1.0 + c[0] + b_left
-        rhs[0] += b_left * pL
-
-        # 右边界：x=L 定压
-        c[N-1] = 0.0
-        a[N-1] = D * dt / (dx[N-1] * dx_face[-1])         # 到单元 N-2
-        b_right = D * dt / (dx[N-1] * (0.5 * dx[N-1]))    # 到边界
-        b[N-1] = 1.0 + a[N-1] + b_right
-        rhs[N-1] += b_right * pR
-
-        # 组装带状矩阵（上对角、主对角、下对角）
-        ab = np.zeros((3, N))
-        ab[0, 1:] = -c[:-1]     # 主对角上方
-        ab[1, :] = b
-        ab[2, :-1] = -a[1:]     # 主对角下方
-
-        p = solve_banded((1, 1), ab, rhs)
+        rhs = p + step_size * forcing
+        if N == 1:
+            p = rhs / matrix[1]
+        else:
+            p = solve_banded((1, 1), matrix, rhs)
+        elapsed = target
         if store:
-            hist.append((step * dt, p.copy()))
+            hist.append((elapsed, p.copy()))
 
     return xc, p, hist
 

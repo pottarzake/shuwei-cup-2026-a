@@ -1,18 +1,19 @@
-D = 2.349817e-04 m2/s
-t= 1 d: rel_L2_vs_erfc = 1.182e-04
-t= 5 d: rel_L2_vs_erfc = 1.992e-05
-t=10 d: rel_L2_vs_erfc = 8.991e-06
-grid: n=100:2.23e-03, n=200:6.67e-04, n=400:1.98e-04, n=800:3.78e-05
-grid order: 1.74, 1.75, 2.39
-time: dt=0.01d:1.65e-04, dt=0.005d:8.13e-05, dt=0.002d:3.14e-05, dt=0.001d:1.49e-05, dt=0.0005d:7.00e-06
-time order: 1.02, 1.04, 1.07, 1.09
+D = 3.084135e-04 m2/s
+t= 1 d: rel_L2_vs_erfc = 1.156e-04
+t= 5 d: rel_L2_vs_erfc = 1.945e-05
+t=10 d: rel_L2_vs_erfc = 8.772e-06
+grid: n=100:1.92e-03, n=200:4.77e-04, n=400:1.19e-04, n=800:2.98e-05
+grid order: 2.00, 2.00, 2.00
+time: dt=0.01d:1.62e-04, dt=0.005d:7.99e-05, dt=0.002d:3.09e-05, dt=0.001d:1.47e-05, dt=0.0005d:6.87e-06
+time order: 1.02, 1.04, 1.07, 1.10
 production candidates (L=40 m, vs same-domain reference):
-  n=400 stretch=0.5 dt=0.001: 9.30e-05/1.76e-05/1.00e-05
-  n=400 stretch=0.5 dt=0.0005: 6.41e-06/1.58e-06/1.31e-06
-  n=200 stretch=0.6 dt=0.002: 3.02e-04/5.82e-05/3.36e-05
+  n=400 stretch=0.5 dt=0.001: 9.09e-05/1.73e-05/1.05e-05
+  n=400 stretch=0.5 dt=0.0005: 5.02e-06/1.39e-06/1.15e-06
+  n=200 stretch=0.6 dt=0.002: 2.93e-04/5.67e-05/3.48e-05
 domain sensitivity (t=30 d, n=400, stretch=0.5, dt=0.02 d):
-  L=  30 m: p(0)-p0=1.199e+07 Pa, first x below 5%p0 = 24.41 m
-  L=  40 m: p(0)-p0=1.199e+07 Pa, first x below 5%p0 = 32.24 m
-  L=  60 m: p(0)-p0=1.199e+07 Pa, first x below 5%p0 = 43.33 m
+  L=  30 m: p(0)-p0=1.200e+07 Pa, radius at 5%p0 = 24.37 m
+  L=  40 m: p(0)-p0=1.200e+07 Pa, radius at 5%p0 = 32.40 m
+  L=  60 m: p(0)-p0=1.200e+07 Pa, radius at 5%p0 = 45.87 m
+CHECK erfc relative error < 1%: PASS
 CHECK grid order in [1.6,2.4]: PASS
 CHECK time order in [0.7,1.3]: PASS

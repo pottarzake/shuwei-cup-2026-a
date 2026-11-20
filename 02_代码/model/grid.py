@@ -25,26 +25,29 @@ def make_grid(L, n=400, stretch=0.3, first=None):
     """
     L = float(L)
     n = int(n)
+    if not np.isfinite(L) or L <= 0 or n < 1:
+        raise ValueError("L must be positive and finite, and n must be at least 1")
     if first is None:
         first = stretch * L / n
     first = float(first)
+    if not np.isfinite(first) or first <= 0:
+        raise ValueError("first cell width must be positive and finite")
 
-    if abs(first * n - L) < 1e-12 or first * n >= L:
+    if n == 1 or first >= L / n:
         dx = np.full(n, L / n)
     else:
-        def total(r):
-            return first * (r ** n - 1.0) / (r - 1.0)
-
-        lo, hi = 1.0 + 1e-12, 2.0
-        for _ in range(200):
+        # 在对数空间求公比。上界对应末层厚度 L，避免直接计算 r**n。
+        indices = np.arange(n)
+        log_first_fraction = np.log(first) - np.log(L)
+        lo, hi = 0.0, -log_first_fraction / (n - 1)
+        for _ in range(60):
             mid = 0.5 * (lo + hi)
-            if total(mid) < L:
+            if np.exp(log_first_fraction + mid * indices).sum() < 1.0:
                 lo = mid
             else:
                 hi = mid
-        r = 0.5 * (lo + hi)
-        dx = first * r ** np.arange(n)
-        dx *= L / dx.sum()
+        dx_fraction = np.exp(log_first_fraction + 0.5 * (lo + hi) * indices)
+        dx = L * (dx_fraction / dx_fraction.sum())
 
     xf = np.concatenate(([0.0], np.cumsum(dx)))
     xc = 0.5 * (xf[:-1] + xf[1:])

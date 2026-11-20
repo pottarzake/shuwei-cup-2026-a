@@ -14,6 +14,7 @@ from scipy.sparse import coo_matrix
 from scipy.sparse.linalg import spsolve
 
 from .grid import make_grid
+from .timestepping import ConvergenceError, advance
 
 
 # ------------------------------------------------------------------ 物性
@@ -79,7 +80,7 @@ def _lam_g(Sg, prm):
 
 
 # ------------------------------------------------------------------ 参数
-def build_prm(case=0, fg_inj=0.5):
+def build_prm(case=0, fg_inj=0.5, N_f=10):
     import config
     c = config.case_params(case)
     return {
@@ -94,17 +95,21 @@ def build_prm(case=0, fg_inj=0.5):
         "mu_co2": c["μ_CO2"],
         "p0": c["p_0"],
         # 气相参数：题面未给，取基准并做敏感性
+        "rho_w_ref": 1000.0, "rho_g_ref": c["ρ_CO2,ref"],
         "rho_g": 850.0, "cg": 1.0 / c["p_0"], "mu_g": c["μ_CO2"],
         "krg0": 1.0, "ng": 2.0, "Sgc": 0.0,
         "fg_inj": fg_inj, "fw_inj": 1.0 - fg_inj,
         "p_max": c["p_max"],
+        "N_f": N_f,
     }
 
 
 class ThreePhase:
     def __init__(self, L=40.0, n=200, stretch=0.5, case=0, fg_inj=0.5,
-                 p_end=None):
-        self.prm = build_prm(case, fg_inj)
+                 p_end=None, q_inj_ref=None, N_f=10):
+        self.prm = build_prm(case, fg_inj, N_f=N_f)
+        if q_inj_ref is not None:
+            self.prm["qinj"] = q_inj_ref
         self.prm["p_end"] = self.prm["p0"] if p_end is None else p_end
 
         self.xf, self.xc, self.dx = make_grid(L, n, stretch=stretch)
@@ -116,7 +121,7 @@ class ThreePhase:
         self.Sg = np.zeros(self.N)
         self.t = 0.0
 
-        area = 4.0 * self.prm["Lf"] * self.prm["hf"]
+        area = self.prm["N_f"] * 4.0 * self.prm["Lf"] * self.prm["hf"]
         self.v_inj = self.prm["qinj"] / area   # config 已转 m3/s
 
         self.mass_in = np.zeros(3)
@@ -161,9 +166,7 @@ class ThreePhase:
         Ag0 = ph0 * rho_g_of(Pold[i], prm) * Sgold[i]
 
         if i == 0:
-            FwL = rho_w_of(pw, prm) * self.v_inj * prm["fw_inj"]
-            FoL = 0.0
-            FgL = rho_g_of(P[i], prm) * self.v_inj * prm["fg_inj"]
+            FwL, FoL, FgL = self._injection_flux()
         else:
             FwL, FoL, FgL = self._face(i - 1, i, P, Sw, Sg)
 
@@ -212,6 +215,20 @@ class ThreePhase:
         Fg = -rho_g_of(p_bc, prm) * _lam_g(Sgb, prm) * (p_bc - P[i]) / dxf
         return Fw, Fo, Fg
 
+    def _injection_flux(self):
+        prm = self.prm
+        return (prm["rho_w_ref"] * self.v_inj * prm["fw_inj"], 0.0,
+                prm["rho_g_ref"] * self.v_inj * prm["fg_inj"])
+
+    def injection_pressure(self):
+        """Estimate fracture-face oil pressure with frozen first-cell mobilities."""
+        prm = self.prm
+        p, sw, sg = self.P[0], self.Sw[0], self.Sg[0]
+        water_in, _, gas_in = self._injection_flux()
+        volume_flux = water_in / rho_w_of(p - pc(sw, prm), prm) + gas_in / rho_g_of(p, prm)
+        mobility = _lam_w(sw, prm) + _lam_o(sw, sg, prm) + _lam_g(sg, prm)
+        return p + volume_flux * (0.5 * self.dx[0]) / mobility
+
     def residual(self, u, uold, dt_s):
         P, Sw, Sg = u[0::3], u[1::3], u[2::3]
         Pold, Swold, Sgold = uold[0::3], uold[1::3], uold[2::3]
@@ -253,6 +270,8 @@ class ThreePhase:
 
     # -------------------------------------------------------------- Newton
     def step(self, dt_s, maxit=25, tol=1e-10):
+        if not np.isfinite(dt_s) or dt_s <= 0:
+            raise ValueError("Time step must be positive and finite")
         u = self.pack()
         uold = u.copy()
         Pold, Swold, Sgold = uold[0::3].copy(), uold[1::3].copy(), uold[2::3].copy()
@@ -266,10 +285,12 @@ class ThreePhase:
         err = np.max(np.abs(R / scale))
         it = 0
         for it in range(1, maxit + 1):
+            if err < tol:
+                break
             J = self.jacobian(u, uold, dt_s)
             du = spsolve(J, -R)
             if not np.all(np.isfinite(du)):
-                raise RuntimeError("Jacobian solve produced non-finite update")
+                raise ConvergenceError("Jacobian solve produced non-finite update")
 
             alpha = 1.0
             for _ in range(8):
@@ -286,31 +307,30 @@ class ThreePhase:
                 if err_n < err or err_n < tol:
                     break
                 alpha *= 0.5
+            else:
+                raise ConvergenceError(f"Newton line search stalled at residual {err:.2e}")
 
             u, R, err = un, Rn, err_n
             if err < tol:
                 break
 
+        if not np.isfinite(err) or err >= tol:
+            raise ConvergenceError(f"Newton residual {err:.2e} exceeds tolerance {tol:.2e}")
+
         self.P, self.Sw, self.Sg = u[0::3], u[1::3], u[2::3]
         self.t += dt_s / 86400.0
 
-        prm = self.prm
-        pw0 = self.P[0] - pc(self.Sw[0], prm)
-        self.mass_in += np.array([
-            rho_w_of(pw0, prm) * self.v_inj * prm["fw_inj"] * dt_s,
-            0.0,
-            rho_g_of(self.P[0], prm) * self.v_inj * prm["fg_inj"] * dt_s,
-        ])
-        if self.P[-1] >= prm["p_end"]:
-            Fw, Fo, Fg = self._right_boundary(self.N - 1, self.P, self.Sw, self.Sg)
-            self.mass_out += np.array([max(Fw, 0.0), max(Fo, 0.0), max(Fg, 0.0)]) * dt_s
+        self.mass_in += np.array(self._injection_flux()) * dt_s
+        self.mass_out += np.array(
+            self._right_boundary(self.N - 1, self.P, self.Sw, self.Sg)
+        ) * dt_s
         return it, err
 
     def run(self, t_end, dt, maxit=25, tol=1e-10, verbose=False):
         nstep = int(round(t_end / dt))
         hist = []
         for k in range(nstep):
-            it, err = self.step(dt * 86400.0, maxit, tol)
+            it, err = advance(self, dt * 86400.0, maxit=maxit, tol=tol)
             if verbose and k % max(1, nstep // 10) == 0:
                 print(f"  step {k}/{nstep}, it={it}, err={err:.2e}")
             hist.append((self.t, self.P.copy(), self.Sw.copy(), self.Sg.copy()))

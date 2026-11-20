@@ -17,6 +17,7 @@ from scipy.sparse import coo_matrix
 from scipy.sparse.linalg import spsolve
 
 from .grid import make_grid
+from .timestepping import ConvergenceError, advance
 
 
 # ------------------------------------------------------------------ 物性
@@ -59,12 +60,13 @@ def _mobility_o(S, prm):
 
 
 # ------------------------------------------------------------------ 参数
-def build_prm(case=0, fw_inj=0.5, p_inj_max=None):
+def build_prm(case=0, fw_inj=0.5, p_inj_max=None, N_f=10):
     import config
     c = config.case_params(case)
     return {
         "phi0": c["φ_0"], "cphi": c["c_φ"], "k": c["k_m0"],
         "rho_o": c["ρ_o"], "rho_w": c["ρ_w"],
+        "rho_w_ref": 1000.0, "rho_o_ref": c["ρ_o"],
         "mu_o": c["μ_o"], "mu_w": c["μ_w"],
         "co": c["c_o"], "cw": c["c_w"],
         "Sw0": c["S_w0"], "Swr": c["S_wr"], "Sor": c["S_or"],
@@ -74,6 +76,7 @@ def build_prm(case=0, fw_inj=0.5, p_inj_max=None):
         "mu_co2": c["μ_CO2"],
         "p0": c["p_0"], "fw_inj": fw_inj,
         "p_max": p_inj_max if p_inj_max is not None else c["p_max"],
+        "N_f": N_f,
     }
 
 
@@ -99,8 +102,10 @@ def _face_flux(pl, Sl, pr, Sr, dxf, prm):
 
 class TwoPhase:
     def __init__(self, L=40.0, n=200, stretch=0.5, case=0,
-                 fw_inj=0.5, p_end=None):
-        self.prm = build_prm(case, fw_inj)
+                 fw_inj=0.5, p_end=None, q_inj_ref=None, N_f=10):
+        self.prm = build_prm(case, fw_inj, N_f=N_f)
+        if q_inj_ref is not None:
+            self.prm["qinj"] = q_inj_ref
         self.prm["p_end"] = self.prm["p0"] if p_end is None else p_end
 
         self.xf, self.xc, self.dx = make_grid(L, n, stretch=stretch)
@@ -112,7 +117,7 @@ class TwoPhase:
         self.t = 0.0
 
         # 注入速度：config 已把 m3/d 转成 m3/s，这里只需除以面积
-        area = 4.0 * self.prm["Lf"] * self.prm["hf"]
+        area = self.prm["N_f"] * 4.0 * self.prm["Lf"] * self.prm["hf"]
         self.v_inj = self.prm["qinj"] / area
 
         self.mass_in_w = 0.0
@@ -156,25 +161,14 @@ class TwoPhase:
 
         # 左界面
         if i == 0:
-            FwL = rho_w_of(pw, prm) * self.v_inj * prm["fw_inj"]
-            FoL = rho_o_of(P[i], prm) * self.v_inj * (1.0 - prm["fw_inj"])
+            FwL, FoL = self._injection_flux()
         else:
             FwL, FoL = _face_flux(P[i - 1], S[i - 1], P[i], S[i],
                                   self.dxf[i - 1], prm)
 
         # 右界面
         if i == self.N - 1:
-            p_bc = prm["p_end"]
-            if P[i] >= p_bc:      # 出流
-                S_bc = S[i]
-            else:                 # 入流
-                S_bc = prm["Sw0"]
-            pw_bc = p_bc - pc(S_bc, prm)
-            lam_w = _mobility_w(S_bc if P[i] < p_bc else S[i], prm)
-            lam_o = _mobility_o(S_bc if P[i] < p_bc else S[i], prm)
-            dxf = 0.5 * dx
-            FwR = -rho_w_of(pw_bc, prm) * lam_w * (pw_bc - pw) / dxf
-            FoR = -rho_o_of(p_bc, prm) * lam_o * (p_bc - P[i]) / dxf
+            FwR, FoR = self._right_boundary(P[i], S[i])
         else:
             FwR, FoR = _face_flux(P[i], S[i], P[i + 1], S[i + 1],
                                   self.dxf[i], prm)
@@ -182,6 +176,17 @@ class TwoPhase:
         Rw = dx * (Aw - Aw0) / dt + FwR - FwL
         Ro = dx * (Ao - Ao0) / dt + FoR - FoL
         return Rw, Ro
+
+    def _injection_flux(self):
+        prm = self.prm
+        return (prm["rho_w_ref"] * self.v_inj * prm["fw_inj"],
+                prm["rho_o_ref"] * self.v_inj * (1.0 - prm["fw_inj"]))
+
+    def _right_boundary(self, pressure, saturation):
+        prm = self.prm
+        boundary_saturation = saturation if pressure >= prm["p_end"] else prm["Sw0"]
+        return _face_flux(pressure, saturation, prm["p_end"], boundary_saturation,
+                          0.5 * self.dx[-1], prm)
 
     def residual(self, u, uold, dt):
         P, S = u[0::2], u[1::2]
@@ -226,6 +231,8 @@ class TwoPhase:
     # -------------------------------------------------------------- Newton
     def step(self, dt_s, maxit=20, tol=1e-8):
         """dt_s: 时间步，秒。"""
+        if not np.isfinite(dt_s) or dt_s <= 0:
+            raise ValueError("Time step must be positive and finite")
         u = self.pack()
         uold = u.copy()
         Pold, Sold = uold[0::2].copy(), uold[1::2].copy()
@@ -240,10 +247,12 @@ class TwoPhase:
         err = err0
         it = 0
         for it in range(1, maxit + 1):
+            if err < tol:
+                break
             J = self.jacobian(u, uold, dt_s)
             du = spsolve(J, -R)
             if not np.all(np.isfinite(du)):
-                raise RuntimeError("Jacobian solve produced non-finite update")
+                raise ConvergenceError("Jacobian solve produced non-finite update")
 
             alpha = 1.0
             for _ in range(8):
@@ -255,28 +264,25 @@ class TwoPhase:
                 if err_n < err or err_n < tol:
                     break
                 alpha *= 0.5
+            else:
+                raise ConvergenceError(f"Newton line search stalled at residual {err:.2e}")
 
             u, R, err = un, Rn, err_n
             if err < tol:
                 break
 
+        if not np.isfinite(err) or err >= tol:
+            raise ConvergenceError(f"Newton residual {err:.2e} exceeds tolerance {tol:.2e}")
+
         self.unpack(u)
         self.t += dt_s / 86400.0
 
-        # 累计边界质量（kg/m2）
-        prm = self.prm
-        pw0 = self.P[0] - pc(self.S[0], prm)
-        self.mass_in_w += rho_w_of(pw0, prm) * self.v_inj * prm["fw_inj"] * dt_s
-        self.mass_in_o += rho_o_of(self.P[0], prm) * self.v_inj * (1 - prm["fw_inj"]) * dt_s
-        if self.P[-1] >= prm["p_end"]:
-            pw_bc = prm["p_end"] - pc(self.S[-1], prm)
-            lam_w = _mobility_w(self.S[-1], prm)
-            lam_o = _mobility_o(self.S[-1], prm)
-            dxf = 0.5 * self.dx[-1]
-            Fw = rho_w_of(pw_bc, prm) * lam_w * (self.P[-1] - prm["p_end"]) / dxf
-            Fo = rho_o_of(self.P[-1], prm) * lam_o * (self.P[-1] - prm["p_end"]) / dxf
-            self.mass_out_w += max(Fw, 0.0) * dt_s
-            self.mass_out_o += max(Fo, 0.0) * dt_s
+        water_in, oil_in = self._injection_flux()
+        water_out, oil_out = self._right_boundary(self.P[-1], self.S[-1])
+        self.mass_in_w += water_in * dt_s
+        self.mass_in_o += oil_in * dt_s
+        self.mass_out_w += water_out * dt_s
+        self.mass_out_o += oil_out * dt_s
         return it, err
 
     def run(self, t_end, dt, maxit=20, tol=1e-8, verbose=False):
@@ -284,7 +290,7 @@ class TwoPhase:
         nstep = int(round(t_end / dt))
         hist = []
         for k in range(nstep):
-            it, err = self.step(dt * 86400.0, maxit, tol)
+            it, err = advance(self, dt * 86400.0, maxit=maxit, tol=tol)
             if verbose and (k % max(1, nstep // 10) == 0):
                 print(f"  step {k}/{nstep}, it={it}, err={err:.2e}")
             hist.append((self.t, self.P.copy(), self.S.copy()))

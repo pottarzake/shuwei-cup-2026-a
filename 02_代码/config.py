@@ -21,6 +21,7 @@ XLSX = BASE / "01_数据" / "A题参数表_整理.xlsx"
 _MD = 9.869233e-16          # 1 mD -> m2
 _MPA = 1e6                  # 1 MPa -> Pa
 _Mpas = 1e-3                # 1 mPa.s -> Pa.s
+_SECONDS_PER_DAY = 86400.0
 
 # 单位字符串 -> 乘到数值上的因子；None 表示需要特殊处理
 UNIT_FACTOR = {
@@ -42,9 +43,9 @@ UNIT_FACTOR = {
     "(°)/(wt%)": 1.0,       # 与 wt% 数值配合使用
     "m3/kg": 1.0,
     "m/m2": 1.0,
-    "m3/d": 1.0,
+    "m3/d": 1.0 / _SECONDS_PER_DAY,
     "m3": 1.0,
-    "d": 1.0,
+    "d": _SECONDS_PER_DAY,
     "—": 1.0,
 }
 
@@ -73,8 +74,7 @@ def to_si(value, unit):
         return value + 273.15
     f = UNIT_FACTOR.get(unit)
     if f is None:
-        # 未知单位不静默换算，直接返回原值并让调用方注意
-        return value
+        raise ValueError(f"Unsupported reservoir parameter unit: {unit!r}")
     return value * f
 
 
@@ -150,13 +150,13 @@ def adsorption_capacity(K_d, rho_w, C_n_wt):
     return K_d * rho_w * (C_n_wt / 100.0)
 
 
-def nano_available_ratio(phi, rho_r, rho_w, C_n_wt):
-    """孔隙水中可提供的纳米质量 / 干岩质量，kg/kg。
+def nano_available_ratio(phi, rho_r, rho_w, C_n_wt, S_w=1.0):
+    """局部流动水相的纳米质量 / 干岩质量，kg/kg。
 
-    线性吸附若超过这个上限，说明等温线在该浓度下物理上不可实现，
-    必须截断或改用 Langmuir 型。
+    默认给出饱水值。连续注入可以补充吸附消耗，局部流动相存量
+    用于比较两种储集项的量级。累计吸附受组分质量守恒约束。
     """
-    return (C_n_wt / 100.0) * phi * rho_w / ((1.0 - phi) * rho_r)
+    return (C_n_wt / 100.0) * phi * S_w * rho_w / ((1.0 - phi) * rho_r)
 
 
 # ---------------------------------------------------------------- 常用派生量
@@ -166,8 +166,8 @@ def hydraulic_diffusivity(case=0):
     k = p["k_m0"]
     phi = p["φ_0"]
     mu = p["μ_o"]
-    # 总压缩系数取油、水、岩石的加权；岩石项用 c_phi 代表
-    c_t = p["c_o"] + p["c_w"] + p["c_φ"]
+    # 单相油的储集系数来自 phi * rho_o 对压力的一阶线性化。
+    c_t = p["c_o"] + p["c_φ"]
     return k / (phi * mu * c_t)
 
 
@@ -190,9 +190,9 @@ if __name__ == "__main__":
         )
     lines.append(f"D(Case0) = {hydraulic_diffusivity(0):.3e} m2/s")
     ca = adsorption_capacity(P['K_d']['Case0'], P['ρ_w']['Case0'], 1.0)
-    cap = nano_available_ratio(P['φ_0']['Case0'], P['ρ_r']['Case0'],
-                               P['ρ_w']['Case0'], 1.0)
+    p = case_params(0)
+    mobile = nano_available_ratio(p["φ_0"], p["ρ_r"], p["ρ_w"], 1.0, p["S_w0"])
     lines.append(f"adsorption C_a (Case0, Cn=1wt%) = {ca:.3e} kg/kg")
-    lines.append(f"available nano / rock mass     = {cap:.3e} kg/kg")
-    lines.append(f"ADSORPTION OVER-CAPACITY x{ca/cap:.1f} -> 线性等温线不可直接使用，需截断或 Langmuir")
+    lines.append(f"mobile nano / rock mass (initial S_w) = {mobile:.3e} kg/kg")
+    lines.append(f"adsorbed/mobile ratio = {ca/mobile:.1f} (initial S_w)")
     (BASE / "03_结果与图表" / "T02_config_check.txt").write_text("\n".join(lines), encoding="utf-8")

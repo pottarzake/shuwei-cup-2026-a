@@ -1,7 +1,5 @@
-q_inj = 300 m3/d, fg_inj = 0.5, L = 40 m, n = 100, t_end = 0.5 d
-Case1: t_stop=0.015 d, p_max exceeded at 0.015 d, p0=61.93 MPa (limit 60.0), Sg_max=0.016, Sw0=0.234, mass_rel=6.15e-13
-Case2: t_stop=0.065 d, p_max exceeded at 0.065 d, p0=57.33 MPa (limit 57.0), Sg_max=0.037, Sw0=0.295, mass_rel=1.10e-10
-Case3: t_stop=0.500 d, feasible to 0.5 d, p0=59.77 MPa (limit 60.0), Sg_max=0.063, Sw0=0.434, mass_rel=1.01e-10
-
-结论：q=300 m3/d 在 Case3 接近可行性边界，Case1/Case2 明显超压；P3 的压力约束会绑定量，低渗情景必须降 q_inj。
-两相对照：油水两相可行 q 仅 8.55 m3/d，三相提高到约 300 m3/d 量级。
+q_ref=300 m3/d, f_CO2=0.5, L=40 m, cells=100, dt_max=0.005 d, t_end=0.5 d
+Pressure check uses a fracture-face estimate with frozen first-cell mobility. The screening model treats CO2 as insoluble.
+Case1: t_stop=0.005 d, estimated pressure limit exceeded, p_face_peak=60.20 MPa (limit 60.0), p_first_cell=54.83 MPa, Sg_max=0.005, mass_rel(w/o/CO2)=3.20e-16/1.18e-14/5.01e-09
+Case2: t_stop=0.060 d, estimated pressure limit exceeded, p_face_peak=57.08 MPa (limit 57.0), p_first_cell=55.94 MPa, Sg_max=0.032, mass_rel(w/o/CO2)=4.51e-14/5.94e-12/3.24e-07
+Case3: t_stop=0.500 d, completed without estimated overpressure, p_face_peak=59.10 MPa (limit 60.0), p_first_cell=58.94 MPa, Sg_max=0.058, mass_rel(w/o/CO2)=2.74e-13/4.48e-12/4.22e-08

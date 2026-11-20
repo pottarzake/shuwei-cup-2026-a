@@ -33,6 +33,7 @@ def rel_err(p_num, p_ana):
 
 
 lines = [f"D = {D:.6e} m2/s"]
+profile_errors = []
 
 # ---------------------------------------------------------------- 1) erfc 对比
 fig, ax = plt.subplots(figsize=(6, 4))
@@ -42,6 +43,7 @@ for t_d in (1, 5, 10):
                                n=400, first=0.01)
     pa = erfc_solution(xc, t, D, p0, pL)
     e = rel_err(p, pa)
+    profile_errors.append(e)
     lines.append(f"t={t_d:>2} d: rel_L2_vs_erfc = {e:.3e}")
     ax.plot(xc, (p - p0) / 1e6, "o", ms=3, label=f"num t={t_d}d")
     ax.plot(xc, (pa - p0) / 1e6, "-", lw=1, label=f"erfc t={t_d}d")
@@ -56,8 +58,8 @@ ns = [100, 200, 400, 800]
 errs = []
 for n in ns:
     dx = L_CHECK / n
-    dt = 0.1 * dx * dx / D / 86400.0
-    xc, p, _ = solve_diffusion(L_CHECK, D, p0, pL, p0, t, dt * 86400,
+    dt = 0.1 * dx * dx / D
+    xc, p, _ = solve_diffusion(L_CHECK, D, p0, pL, p0, t, dt,
                                n=n, stretch=1.0)
     errs.append(rel_err(p, erfc_solution(xc, t, D, p0, pL)))
 orders = [np.log(errs[i] / errs[i + 1]) / np.log(ns[i + 1] / ns[i])
@@ -79,7 +81,7 @@ torders = [np.log(terrs[i] / terrs[i + 1]) / np.log(dts[i] / dts[i + 1])
            for i in range(len(dts) - 1)]
 lines.append("time: " + ", ".join(f"dt={d:g}d:{e:.2e}" for d, e in zip(dts, terrs)))
 lines.append("time order: " + ", ".join(f"{o:.2f}" for o in torders))
-time_ok = all(0.7 <= o <= 1.3 for o in torders[:-1])
+time_ok = all(0.7 <= o <= 1.3 for o in torders)
 
 # ---------------------------------------------------------------- 4) 生产网格候选
 # 注意：L=40 时 t>=5 d 压力已接近右边界，不能再用半无限 erfc 作参考。
@@ -110,10 +112,11 @@ for Ld in (30.0, 40.0, 60.0):
     xc, p, _ = solve_diffusion(Ld, D, p0, pL, p0, 30 * 86400, 0.02 * 86400,
                                n=400, stretch=0.5)
     thr = 0.05 * p0
-    idx = np.where((p - p0) <= thr)[0]
-    R = xc[idx[0]] if len(idx) else np.nan
-    lines.append(f"  L={Ld:>4.0f} m: p(0)-p0={p[0]-p0:.3e} Pa, "
-                 f"first x below 5%p0 = {R:.2f} m")
+    x_with_faces = np.r_[0.0, xc, Ld]
+    disturbance = np.r_[pL - p0, p - p0, 0.0]
+    R = np.interp(thr, disturbance[::-1], x_with_faces[::-1])
+    lines.append(f"  L={Ld:>4.0f} m: p(0)-p0={pL-p0:.3e} Pa, "
+                 f"radius at 5%p0 = {R:.2f} m")
 
 # ---------------------------------------------------------------- 图
 fig, axes = plt.subplots(1, 2, figsize=(9, 3.6))
@@ -125,7 +128,11 @@ axes[1].set_xlabel("dt (d)"); axes[1].set_ylabel("rel L2 error")
 axes[1].set_title("time convergence"); axes[1].grid(alpha=.3, which="both")
 fig.tight_layout(); fig.savefig(OUT / "T06_convergence.png", dpi=200); plt.close(fig)
 
+profile_ok = all(error < 0.01 for error in profile_errors)
+lines.append(f"CHECK erfc relative error < 1%: {'PASS' if profile_ok else 'FAIL'}")
 lines.append(f"CHECK grid order in [1.6,2.4]: {'PASS' if grid_ok else 'FAIL'}")
 lines.append(f"CHECK time order in [0.7,1.3]: {'PASS' if time_ok else 'FAIL'}")
 (OUT / "T06_single_phase_check.txt").write_text("\n".join(lines), encoding="utf-8")
-print("done")
+if not (profile_ok and grid_ok and time_ok):
+    raise SystemExit("Single-phase validation failed. See T06_single_phase_check.txt.")
+print("Single-phase validation passed.")
