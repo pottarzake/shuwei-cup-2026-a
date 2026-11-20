@@ -1,0 +1,21 @@
+P3 NSGA-II（pop=100, gen=80）
+目标 max Q_o / min C_total；约束 p_max、纳米<=30 t、注入+焖井<=90 d
+Case1: 无可行解；最小约束违反 5.849，对应 q=100 (q_max=15)
+Case2: 可行解 99 个；Q_o 490–1629 m3，C_total 413–1875 万元
+Case3: 可行解 99 个；Q_o 1134–4348 m3，C_total 254–1047 万元
+
+折中方案（膝点 + Q_o 的 25/75 分位）：
+  Case2-S1: cn=0.50, q=136, V=1000, f=0.80, ts=10, tau=6.3; Q_o=774, C=440, NPV=-180
+  Case2-S2: cn=1.50, q=135, V=1549, f=0.80, ts=38, tau=4.5; Q_o=1280, C=751, NPV=-323
+  Case2-S3: cn=1.50, q=136, V=1991, f=0.80, ts=38, tau=6.8; Q_o=1344, C=883, NPV=-433
+  Case3-S1: cn=0.54, q=800, V=1000, f=0.80, ts=11, tau=2.5; Q_o=1945, C=303, NPV=348
+  Case3-S2: cn=1.46, q=800, V=1215, f=0.80, ts=35, tau=11.8; Q_o=3179, C=481, NPV=576
+  Case3-S3: cn=1.50, q=800, V=2035, f=0.80, ts=36, tau=12.3; Q_o=3546, C=596, NPV=583
+
+鲁棒性（±15% k/phi/sigma_h，200 次）：
+  Case2-S1: 可行率 0.54, P(NPV>0)=0.00, worst10=-213, mean±sd=-181±22
+  Case2-S2: 可行率 0.56, P(NPV>0)=0.00, worst10=-374, mean±sd=-326±35
+  Case2-S3: 可行率 0.52, P(NPV>0)=0.00, worst10=-485, mean±sd=-429±35
+  Case3-S1: 可行率 1.00, P(NPV>0)=1.00, worst10=272, mean±sd=347±49
+  Case3-S2: 可行率 1.00, P(NPV>0)=1.00, worst10=450, mean±sd=570±81
+  Case3-S3: 可行率 1.00, P(NPV>0)=1.00, worst10=446, mean±sd=577±86
