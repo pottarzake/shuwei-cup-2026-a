@@ -68,7 +68,7 @@ A题_2026数维杯/
 
 ## 协作约定
 
-仓库为**私有**，比赛期间不公开，避免他队看到进度与思路。
+仓库为**私有**，比赛期间不公开，避免他队看到进度与思路。完整流程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 - `main` 分支保持可运行、可编译
 - 各自在分支上工作，命名 `feat/p1-equations`、`feat/p3-nsga2`、`fix/data-split` 等
