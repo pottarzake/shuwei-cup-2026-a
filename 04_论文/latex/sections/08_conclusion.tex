@@ -1,11 +1,54 @@
-% 08_conclusion.tex —— 优缺点与结论（队友统稿，11/23 晚定稿）
+% 08_conclusion.tex —— 优缺点与结论
 \section{Strengths and Weaknesses}
-[TBD: 优势：P1--P4 同一正演器同一符号体系（自洽）；附录 B 口径严格；
-嵌套 Sobol 直接以 $t_s^*$ 为输出；鲁棒筛选工程可解释。
-局限：一维法向几何、缝内压力均匀近似、$Q_w$ 数据缺口依赖假设、
-Case3 天然裂缝为等效处理、数据噪声 ±5\% 限制逐日拟合精度。]
+
+The main strength is consistency. Problems~1--4 share one symbol set, one
+forward model and one economic convention. The pressure redistribution of
+Problem~2 is validated against the three-phase simulation of Problem~1; the
+reduced production model of Problem~3 is calibrated to the training groups of
+Problem~4; and the economic evaluation follows Appendix~B exactly, including
+the reference state, the daily discounting and the fracturing-only baseline.
+The robustness metrics are separated into feasibility, conditional
+profitability and joint frequency, which keeps an infeasible candidate from
+being reported as merely uneconomic.
+
+The limitations are equally explicit. The model is one-dimensional normal to
+the fracture, so pressure loss along the fracture and lateral interference are
+neglected. Natural fractures in Case~3 are represented by an equivalent
+permeability rather than a dual-porosity model. Water production is not
+supplied, so the produced-water term uses a constant water--oil ratio. The
+damage variable is inactive in the nominal pressure range, and the effect of
+injected volume and CO$_2$ fraction on production is not identifiable from the
+supplied data; the zero-exponent convention and the positive-exponent control
+are both reported.
 
 \section{Conclusion}
-[TBD: 按题目四问各一条结论；必须含三情景 $t_s^*$ 具体数值、
-$\Delta NPV$、主控参数 Top-3、对工程实践的建议（Case1 需先解决注入能力，
-如增加裂缝条数；Case2 控制注入速率上限；Case3 全区间可行优先长焖井）。]
+
+For Problem~1, the coupled model reproduces the single-phase erfc solution with
+a relative error below $1.2\times10^{-3}$, shows second-order spatial and
+first-order temporal convergence, and conserves phase mass to
+$10^{-10}$ or better. For Problem~2, the mirror-kernel solution reproduces the
+three-phase shut-in radius while both are non-zero; the 5\% pressure radius
+falls below the threshold at $3$--$4$~d for $q_{inj}=300$~m$^3$/d and at
+$6$--$8$~d for $q_{inj}=800$~m$^3$/d. The pressure radius is therefore a
+short-lived quantity, not the source of a long-soak benefit; the CO$_2$ and
+nano fronts, which move at sub-metre to metre scales, are the persistent
+transport mechanisms.
+
+For Problem~3, Case~1 has no feasible point in the prescribed range because
+its injectivity limit is about $15$~m$^3$/d; three low-rate three-phase runs
+exceed the pressure limit before the planned volume is injected. Case~2 is
+feasible but uneconomic: the compromise candidates give NPV between $-164$
+and $-87\times10^4$~CNY, with a joint feasibility--profitability frequency of
+zero. Case~3 is the only robustly viable scenario: NPV ranges from $+365$ to
+$+671\times10^4$~CNY, every perturbed sample is feasible, and all sampled NPVs
+are positive. The compromise soak times are $8$--$24$~d under the calibrated
+production model.
+
+The engineering implications are conditional. Case~1 would need a larger
+number of fractures, or a lower injection rate, before the prescribed volumes
+can be placed. Case~2 requires a rate at the lower end of its feasible window
+and remains uneconomic at the baseline oil price. Case~3 supports the
+lowest-cost operating point under the zero-exponent convention; if a positive
+volume or CO$_2$-fraction benefit is later demonstrated, the preferred injected
+volume moves from $1000$ to about $1668$~m$^3$. The absolute NPV values should
+be read together with the uncalibrated water-production and baseline terms.

@@ -1,33 +1,265 @@
-% 03_p1_model.tex —— P1 三场耦合模型（你负责；T27 初稿 11/22 晚）
+% 03_p1_model.tex —— P1 三场耦合模型
 \section{Problem 1: Coupled Flow--Stress--Damage Model}
 
-% 写作要求（总纲铁律）：
-%  - 每个符号先定义再用；P2/P3/P4 引用的方程在此编号
-%  - 明确区分注入/焖井/生产三阶段的边界条件（题目硬性要求）
-%  - 物理假设引文献见 02 节注释
-\subsection{Conceptual Model and 1D Geometry}
-[TBD: 裂缝面法向一维的降维决策与理由（总纲 §3.1）；$x\in[0,L]$，$L=40$ m 基准；
-$N_f$ 条裂缝，有效面积 $N_f\cdot 4L_fh_f$。]
+\subsection{Conceptual Model and One-Dimensional Reduction}
 
-\subsection{Flow Equations}
-[TBD: 多相达西流 + 组分输运（CO$_2$ 溶解亨利定律、纳米对流-扩散-吸附）；
-边界按总纲 3.7：注入按配液比例施加组分通量；远场流入取初始组分，
-流出取出流通量。质量守恒验证结果放此处或附录。]
+Deep tight-oil reservoirs are characterized by matrix permeability below
+$0.1~\mathrm{mD}$, poorly developed natural fractures, and recovery factors
+commonly below $10\%$. A hydraulic fracture is a high-conductivity planar
+region. Because its conductivity exceeds the matrix permeability by several
+orders of magnitude, the pressure and concentration gradients normal to the
+fracture face dominate those along the fracture. We therefore reduce the
+matrix--fracture exchange to a one-dimensional domain $x\in[0,L]$ normal to the
+fracture face, with $L=40$~m as the baseline distance to the constant-pressure
+far field. The fracture face is $x=0$. For $N_f$ fractures the effective
+matrix--fracture area is
+\begin{equation}
+A = N_f\,4L_fh_f,
+\label{eq:area}
+\end{equation}
+where $L_f$ and $h_f$ are the half-length and height of one fracture; the
+factor four accounts for two wings and two faces. This reduction preserves the
+dominant transport direction and keeps the coupled system solvable within the
+competition horizon. Its limitations are stated in
+Section~\ref{sec:p1_limits}.
+
+\subsection{Flow Field}
+
+Three phases are considered: water ($w$), oil ($o$), and a CO$_2$-rich gas
+phase ($g$), with
+\begin{equation}
+S_w+S_o+S_g=1 .
+\label{eq:saturation}
+\end{equation}
+Each phase obeys Darcy's law,
+\begin{equation}
+\mathbf v_\alpha=-\frac{k\,k_{r\alpha}}{\mu_\alpha}\nabla p_\alpha,
+\qquad \alpha\in\{w,o,g\},
+\label{eq:darcy}
+\end{equation}
+and mass conservation,
+\begin{equation}
+\frac{\partial}{\partial t}\left(\phi\rho_\alpha S_\alpha\right)
++\nabla\cdot\left(\rho_\alpha\mathbf v_\alpha\right)
+=\rho_\alpha q_\alpha .
+\label{eq:mass}
+\end{equation}
+Relative permeabilities follow the Brooks--Corey form
+\begin{equation}
+k_{rw}=k_{rw0}S_{wD}^{n_w},\qquad
+k_{ro}=k_{ro0}S_{oD}^{n_o},\qquad
+k_{rg}=k_{rg0}S_{gD}^{n_g},
+\label{eq:kr}
+\end{equation}
+with normalized saturations $S_{wD}=(S_w-S_{wr})/(1-S_{wr}-S_{or}-S_{gc})$,
+$S_{gD}=(S_g-S_{gc})/(1-S_{wr}-S_{or}-S_{gc})$ and
+$S_{oD}=1-S_{wD}-S_{gD}$. The gas relative-permeability parameters are not
+given in the problem statement; we use $k_{rg0}=1$, $n_g=2$, $S_{gc}=0$ and
+treat them as sensitivity parameters. Capillary pressure is
+\begin{equation}
+p_c=p_o-p_w=A_c\,\frac{\sigma(C_n)}{\sigma_0}
+\left|\cos\theta(C_n)\right|J(S_{wD}),
+\qquad J(S_{wD})=S_{wD}^{-1/2},
+\label{eq:pc}
+\end{equation}
+where the interfacial tension and contact angle depend on the nano
+concentration,
+\begin{equation}
+\sigma(C_n)=\sigma_0\left(1-a_\sigma C_n\right),\qquad
+\theta(C_n)=\theta_0+a_\theta C_n .
+\label{eq:nano_props}
+\end{equation}
+
+CO$_2$ is allowed to dissolve in oil and water. With Henry's law at
+instantaneous equilibrium,
+\begin{equation}
+\omega_w=H_w\,p_{CO_2},\qquad \omega_o=H_o\,p_{CO_2},
+\label{eq:henry}
+\end{equation}
+and the component conservation equation reads
+\begin{equation}
+\frac{\partial}{\partial t}\left[\phi\left(S_w\rho_w\omega_w
++S_o\rho_o\omega_o\right)\right]
++\nabla\cdot\left(\rho_w\omega_w\mathbf v_w
++\rho_o\omega_o\mathbf v_o\right)
+-\nabla\cdot\left(\phi S_w\rho_wD_{CO_2,w}\nabla\omega_w
++\phi S_o\rho_oD_{CO_2,o}\nabla\omega_o\right)=q_{CO_2}.
+\label{eq:co2}
+\end{equation}
+Dissolution modifies oil density and viscosity:
+\begin{equation}
+\rho_o=\rho_{o0}\left(1+\beta_{sw}\omega_o\right),\qquad
+\mu_o=\mu_{o0}\left(1+\beta_{sw}\omega_o\right)^{-m_\mu}.
+\label{eq:swell}
+\end{equation}
+
+Nanoparticles are transported in the aqueous phase only:
+\begin{equation}
+\frac{\partial}{\partial t}\left[\phi S_w\rho_wC_n
++\rho_r(1-\phi)C_a\right]
++\nabla\cdot\left(\rho_wC_n\mathbf v_w\right)
+-\nabla\cdot\left(\phi S_w\rho_wD_n\nabla C_n\right)=0 .
+\label{eq:nano}
+\end{equation}
+Adsorption is represented by a Langmuir isotherm calibrated to the linear
+coefficient $K_d$ in the low-concentration limit,
+\begin{equation}
+C_w=\rho_wC_n,\qquad
+C_a=\frac{C_{a,\max}K_LC_w}{1+K_LC_w},\qquad
+K_L=\frac{K_d}{C_{a,\max}},
+\label{eq:langmuir}
+\end{equation}
+where $C_{a,\max}=0.5$ times the aqueous nano inventory per unit rock mass in
+the baseline case. The linear isotherm $C_a=K_dC_w$ is retained as a
+comparison; it over-predicts adsorption by more than two orders of magnitude
+at $C_n=1~\mathrm{wt\%}$ and therefore must be capped.
+
+Porosity and matrix permeability are pressure- and damage-dependent:
+\begin{equation}
+\phi=\phi_0\left[1+c_\phi(p-p_0)\right](1-\lambda_d d),\qquad
+k_m=k_{m0}\exp\left[\gamma_k(p-p_0)\right](1-d)^3 .
+\label{eq:phik}
+\end{equation}
 
 \subsection{Poroelastic Stress Field}
-[TBD: 一维增量本构（相对初始状态），$\sigma'_{xx}=\sigma_h-\alpha(p-p_0)$，
-$u_x(L)=0$；固定应力分裂耦合格式（引 P1-09）。]
+
+With the total vertical stress and the horizontal stress fixed by the
+far field, the one-dimensional total stress is constant,
+$\partial\sigma_{xx}/\partial x=0$, and equal to $\sigma_h$. The Biot
+effective stress is
+\begin{equation}
+\sigma'_{xx}=\sigma_h-\alpha p .
+\label{eq:biot}
+\end{equation}
+Relative to the initial state $\sigma'_{0}=\sigma_h-\alpha p_0$, the
+incremental uniaxial-strain constitutive relation gives
+\begin{equation}
+\varepsilon_{xx}=\frac{\alpha\left(p-p_0\right)}{M},
+\qquad
+M=\frac{E(1-\nu)}{(1+\nu)(1-2\nu)},
+\label{eq:strain}
+\end{equation}
+where tension is positive and $M$ is the constrained modulus. The displacement
+follows from $\varepsilon_{xx}=\partial u_x/\partial x$ with the base
+condition $u_x(L)=0$. This incremental form avoids spurious deformation when
+the initial stress state is not explicitly known.
 
 \subsection{Damage Evolution}
-[TBD: 压缩应变历史 $\kappa=\max\langle-\varepsilon_{xx}\rangle_+$；
-$d=1-\exp[-\beta_d\langle\kappa-\varepsilon_d\rangle_+]$；
-$E=E_0(1-d)$、$k_m=k_{m0}(1-d)^3$、
-$\phi=\phi_0[1+c_\phi(p-p_0)](1-\lambda_d d)$。引 P1-10/P1-12。]
 
-\subsection{Boundary Conditions by Stage and Numerical Implementation}
-[TBD: 表格列出三阶段（注入/焖井/生产）每类边界；
-向后 Euler + 全隐式 Newton；网格 400 单元几何加密；验证摘要引附录。]
+Damage is driven by the history of compressive strain,
+\begin{equation}
+\kappa(x,t)=\max_{0\le t'\le t}\left\langle-\varepsilon_{xx}(x,t')\right\rangle_+,
+\qquad
+d=1-\exp\left[-\beta_d\left\langle\kappa-\varepsilon_d\right\rangle_+\right],
+\label{eq:damage}
+\end{equation}
+so that $d$ is irreversible and bounded in $[0,1]$. The degradation relations
+in Eq.~\eqref{eq:phik} close the loop: damage reduces stiffness through
+$E=E_0(1-d)$ and permeability through $(1-d)^3$. For the prescribed pressure
+range, the compressive strain in all three scenarios is
+$2.3$--$3.7\times10^{-4}$, whereas the prescribed thresholds are
+$\varepsilon_d=0.004$--$0.006$; hence the nominal damage is $d=0$ and the
+model reduces to a poroelastic pressure-sensitive formulation. Damage is
+activated only if $\varepsilon_d$ is reduced below about
+$3\times10^{-4}$; this is reported as a sensitivity rather than a calibrated
+prediction.
+
+\subsection{Boundary and Initial Conditions by Stage}
+
+\begin{table}[h!t]
+\centering
+\caption{Boundary conditions for the three development stages.}
+\label{tbl:bc}
+\small
+\begin{tabular}{p{2.2cm}p{4.6cm}p{4.2cm}}
+\toprule[1.5pt]
+Stage & $x=0$ (fracture face) & $x=L$ (far field)\\
+\midrule[1pt]
+Injection & prescribed total flux $q_{inj}$ with component mass fluxes
+according to the injected mixture & $p=p_0$; inflowing fluid uses the initial
+composition, outflow uses the outgoing flux\\
+Soak & zero normal flux for every phase and component & $p=p_0$\\
+Production & $p=p_{wf}$ & $p=p_0$\\
+Waiting ($\tau_{inj}$) & zero flux; fracture closes under effective stress &
+$p=p_0$\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+The initial state is
+\begin{equation}
+p(x,0)=p_0,\quad S_w(x,0)=S_{w0},\quad S_g(x,0)=0,\quad
+C_n(x,0)=0,\quad d(x,0)=0 .
+\label{eq:ic}
+\end{equation}
+During injection the total rate is fixed and the injection pressure is
+monitored; a scheme is feasible only if $\max_t p_{inj}(t)\le p_{\max}$.
+
+\subsection{Numerical Implementation}
+
+The equations are discretized by a finite-volume method on a geometrically
+graded grid (400 cells; first cell $0.5L/n$). Time integration uses backward
+Euler with adaptive step halving when a Newton iteration fails. Flow and
+mechanics are coupled by a fixed-stress split, which is unconditionally stable
+for poromechanical problems \cite{p1-09}. The Jacobian is assembled from local
+finite differences of the cell residuals; because each residual depends only on
+three neighbouring cells, the cost is linear in the number of cells. Saturation
+and pressure are clipped to physical bounds, and the damage update is
+under-relaxed with a bounded increment.
 
 \subsection{Verification}
-[TBD: 单相 vs erfc 解析解（G1）；两相组分质量守恒 $<10^{-6}$（G2）；
-损伤四项数值检查（G3，Q14）。]
+
+\begin{table}[h!t]
+\centering
+\caption{Verification summary of the forward model.}
+\label{tbl:verification}
+\small
+\begin{tabular}{lll}
+\toprule[1.5pt]
+Check & Setting & Result\\
+\midrule[1pt]
+Single-phase vs.\ erfc & $t=1/5/10$~d & relative $L_2$ error
+$1.16/0.20/0.09\times10^{-3}$\\
+Spatial order & $n=100\to800$ & observed order $2.00$\\
+Temporal order & $\Delta t=10^{-2}\to5\times10^{-4}$~d & observed order
+$1.02$--$1.10$\\
+Two-phase mass balance & 360~d & water $2.5\times10^{-11}$, oil
+$4.1\times10^{-11}$\\
+Three-phase mass balance & injection + soak & $10^{-10}$--$10^{-13}$\\
+Damage checks & loading--unloading, grid/time refinement & $d$ non-decreasing,
+properties positive\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+Figure~\ref{fig:p1_erfc} compares the numerical pressure profile with the
+erfc solution, and Figure~\ref{fig:p1_profiles} shows the three-phase profiles
+at the end of injection for the three scenarios. The numerical core is
+therefore verified before it is used in Problems~2--4.
+
+\begin{figure}[h!t]
+\centering
+\includegraphics[width=0.62\textwidth]{p1_erfc}
+\caption{Single-phase diffusion against the erfc solution at $t=1,5,10$~d.}
+\label{fig:p1_erfc}
+\end{figure}
+
+\begin{figure}[h!t]
+\centering
+\includegraphics[width=0.75\textwidth]{p1_profiles}
+\caption{Pressure and gas-saturation profiles at the end of injection for the
+three scenarios ($N_f=10$, $q_{inj}=300$~m$^3$/d).}
+\label{fig:p1_profiles}
+\end{figure}
+
+\subsection{Limitations}
+\label{sec:p1_limits}
+
+The one-dimensional reduction neglects pressure loss along the fracture and
+lateral gradients between fractures. Natural fractures in Case~3 are represented
+by an equivalent permeability rather than a dual-porosity model. The free CO$_2$
+phase is treated as insoluble in the flow runs used for the injectivity screen;
+dissolution is included in the transport equations but is not coupled back to
+the phase mobilities in those runs. These limitations are acceptable for the
+scaling analysis of Problem~2 and are revisited in Problem~3, where the reduced
+production model is calibrated to the supplied data.

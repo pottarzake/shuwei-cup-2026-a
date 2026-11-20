@@ -1,28 +1,220 @@
-% 05_p3_optimization.tex —— P3 多目标优化（你负责；T38 初稿 11/23 晚）
+% 05_p3_optimization.tex —— P3 多目标优化
 \section{Problem 3: Multi-Objective Optimization}
 
 \subsection{Formulation}
-[TBD: 目标 $Q_o$ 与 $C_{total}$（或 $\Delta NPV$）双目标；
-设计变量 $C_n, q_{inj}, V_{inj}, f_{CO_2}, t_s, \tau_{inj}$ 及取值范围；
-约束：设备能力、纳米 30 t/井次、$p_{max}=\min(0.95p_f, 60\ \mathrm{MPa})$、
-$t_{inj}+t_s \le 90$ d；三情景 Case1/2/3。引 P3-02（技术+经济双维度合理性）。]
 
-\subsection{Surrogate-Assisted Evaluation}
-[TBD: LHS 500 点×3 情景批量正演；Kriging/RBF/RF 代理对比（10 折 CV，
-$R^2>0.95$）；代理必要性引 P3-03；Pareto 回代真实正演校验误差 <10\%。]
+The design vector is
+\begin{equation}
+\mathbf x=\left(C_n,\ q_{inj},\ V_{inj},\ f_{CO_2},\ t_s,\ \tau_{inj}\right),
+\label{eq:design}
+\end{equation}
+with the bounds of Table~\ref{tbl:bounds}. Two objectives are retained, in
+line with the technical and economic dimensions recommended in the CO$_2$
+huff-n-puff literature \cite{p3-01,p3-02}:
+\begin{equation}
+\max f_1=Q_o(\mathbf x),\qquad \min f_2=C_{total}(\mathbf x),
+\label{eq:objectives}
+\end{equation}
+where $Q_o$ is the cumulative oil over 360~d and $C_{total}$ follows
+Appendix~B exactly (fracturing, injection, soaking, materials, production and
+water treatment).
+
+\begin{table}[h!t]
+\centering
+\caption{Design-variable bounds and engineering constraints.}
+\label{tbl:bounds}
+\small
+\begin{tabular}{lll}
+\toprule[1.5pt]
+Item & Range / value & Note\\
+\midrule[1pt]
+$C_n$ & 0.5--1.5 wt\% & nano concentration\\
+$q_{inj}$ & 100--800 m$^3$/d & injection rate\\
+$V_{inj}$ & 1000--5000 m$^3$ & total injected volume\\
+$f_{CO_2}$ & 0.2--0.8 & CO$_2$ volume fraction\\
+$t_s$ & 5--60 d & soak time\\
+$\tau_{inj}$ & 0--15 d & fixed to $0$ in this run\\
+$m_{nano}$ & $\le30$ t per treatment & material limit\\
+$p_{inj}$ & $\le p_{\max}=\min(0.95p_f,60)$ MPa & pressure limit\\
+$t_{inj}+t_s$ & $\le90$ d & operational limit\\
+$q_o+q_w$ & $\le100$ m$^3$/d & liquid limit\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+The pressure limit is the binding constraint for the low-permeability cases.
+Using the three-phase injectivity screen of Problem~1 with $N_f=10$, the
+maximum feasible rates are approximately $15$, $137$ and $1510$~m$^3$/d for
+Cases~1, 2 and 3. Case~1 therefore has no feasible point in the prescribed
+interval $[100,800]$~m$^3$/d; three additional three-phase runs at the lower
+bounds $q_{inj}=100$~m$^3$/d and $V_{inj}=1000$~m$^3$ with
+$f_{CO_2}=0.2,0.5,0.8$ exceed the pressure limit at $4.60$, $5.55$ and
+$6.80$~d of a planned 10~d injection. This conclusion covers those runs, not
+the whole design space.
+
+\subsection{Fast Evaluation Model}
+
+A full 360-day three-phase simulation takes minutes per candidate, which is
+incompatible with population-based optimization. We therefore use a
+data-calibrated reduced model for the soak and concentration dimensions and a
+mechanistic tank relation for production:
+\begin{equation}
+q_i=\lambda_o\frac{\bar p-p_{wf}}{L}A,\qquad
+V_o=A\,L_d\,\phi\left(S_o-S_{or}\right),\qquad
+\tau=\frac{V_o}{q_i},\qquad
+Q_o=V_o\left(1-e^{-360/\tau}\right).
+\label{eq:tank}
+\end{equation}
+The initial rate $Q_1(t_s)$ and the effective storage length $L_d(t_s)$ are
+fitted from the training groups of Attachment~C (5--50~d; 55~d is held out,
+15/45/60~d are test groups) with
+\begin{equation}
+Q_1(t_s)=a+b\left(1-e^{-t_s/c}\right),\qquad
+L_d(t_s)=a'+b'\left(1-e^{-t_s/c'}\right).
+\label{eq:fit}
+\end{equation}
+Across the nine scenario--concentration combinations the fits give
+$L_d\approx0.08$, $0.25$ and $0.48$~m for Cases~1--3 and reproduce the full
+$Q_{360}(t_s)$ curve with a maximum relative error of $1.2\%$ on the held-out
+55~d group.
+
+The exponents of $V_{inj}$ and $f_{CO_2}$ are not identified by Attachment~C,
+which covers only $C_n$ and $t_s$. Seven three-phase injection--soak runs for
+Case~3 ($V_{inj}=1000/3000/5000$~m$^3$, $f_{CO_2}=0.2/0.8$, plus the
+$3000/0.5$ baseline) give
+\begin{equation}
+\ln\frac{Q}{Q_0}=a\ln\frac{V_{inj}}{3000}+b\ln\frac{f_{CO_2}}{0.5},
+\qquad a=-0.00721,\quad b=+0.00062,\quad R^2=0.887 .
+\label{eq:vf}
+\end{equation}
+At fixed $V_{inj}$, raising $f_{CO_2}$ from 0.2 to 0.8 changes the proxy
+production by less than $0.006\%$; raising $V_{inj}$ from 1000 to
+5000~m$^3$ lowers it by about $1.3\%$. We therefore adopt zero exponents as a
+conservative baseline convention: in the identifiable range, increasing the
+injected volume or the CO$_2$ fraction adds cost without a demonstrated
+production benefit. The positive-exponent case is retained as a structural
+sensitivity (Section~\ref{sec:p3_limits}).
 
 \subsection{NSGA-II and Compromise Solutions}
-[TBD: 种群 100、代数 200；每情景 2--3 个折中解（ knee 点选取准则写清楚）；
-三情景可行域差异：Case1 空（工程不可行要如实报告）、Case2 上限约 137 m$^3$/d、
-Case3 全区间。前沿图 + 折中解表。]
+
+Because the reduced model evaluates a candidate in milliseconds, no surrogate
+is required. A compact NSGA-II is implemented with a population of 100 and 80
+generations; constraint violation is handled by constrained domination
+(feasible solutions dominate infeasible ones, and among infeasible ones the
+smaller violation dominates). The reduction to a fast evaluator follows the
+surrogate rationale of \cite{p3-03}, but the surrogate step itself is replaced
+by the calibrated reduced model. From the final non-dominated set we select
+three compromise candidates: the point closest to the ideal point in
+normalized objective space, and the points at the 25\% and 75\% quantiles of
+$Q_o$.
+
+\begin{table}[h!t]
+\centering
+\caption{Non-dominated fronts and representative NPV ranges.}
+\label{tbl:p3_fronts}
+\small
+\begin{tabular}{lcccc}
+\toprule[1.5pt]
+Case & Non-dominated points & $Q_o$ (m$^3$) & $C_{total}$ ($10^4$ CNY)
+& NPV ($10^4$ CNY)\\
+\midrule[1pt]
+1 & 0 & -- & -- & --\\
+2 & 100 & 590--1420 & 416--651 & $-164$ to $-87$\\
+3 & 99 & 1359--3783 & 262--558 & $+365$ to $+671$\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+\begin{table}[h!t]
+\centering
+\caption{Compromise candidates.}
+\label{tbl:p3_candidates}
+\small
+\begin{tabular}{lcccccc}
+\toprule[1.5pt]
+Candidate & $C_n$ & $q_{inj}$ & $V_{inj}$ & $f_{CO_2}$ & $t_s$ (d)
+& NPV ($10^4$ CNY)\\
+\midrule[1pt]
+Case2-S1 & 0.50 & 137 & 1000 & 0.80 & 8 & $-164$\\
+Case2-S2 & 0.50 & 136 & 1000 & 0.79 & 21 & $-88$\\
+Case2-S3 & 0.55 & 137 & 1000 & 0.80 & 22 & $-87$\\
+Case3-S1 & 0.50 & 800 & 1000 & 0.80 & 8 & $+365$\\
+Case3-S2 & 0.51 & 800 & 1000 & 0.80 & 21 & $+648$\\
+Case3-S3 & 0.52 & 791 & 1000 & 0.80 & 24 & $+671$\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+\begin{figure}[h!t]
+\centering
+\includegraphics[width=0.62\textwidth]{p3_pareto}
+\caption{Pareto fronts of production versus total cost for Cases~2 and~3.}
+\label{fig:p3_pareto}
+\end{figure}
 
 \subsection{Robustness Screening}
-[TBD: 对渗透率、地应力等 ±15\% 扰动（说明分布与样本数，500 次）；
-四项指标：工程可行率、$\Pr(\Delta NPV>0)$、最差 10\% 平均 $\Delta NPV$、均值±标准差；
-$\mu-\sigma$ 为主判据，CVaR$_{0.9}$ 对照（引 P3-04）；工程建议。]
 
-\subsection{Injection Timing and Fracture Closure}
-[TBD（对应 T23，可并入 P1/P3）：$\tau_{inj}$ 等待期内缝宽
-$w_f=w_{f,\infty}+(w_{f0}-w_{f,\infty})e^{-c_c(\sigma'_n-\sigma'_{n0})}$、
-$k_f=w_f^2/12$、导流 $\propto w_f^3$（引 P1-07/P1-11）；
-$\tau_{inj}$ 增大时 $w_f, k_f, NPV$ 单调下降；与折现影响分离。]
+Each compromise candidate is perturbed 200 times with independent uniform
+$\pm15\%$ changes in matrix permeability, porosity and minimum horizontal
+stress. The perturbation is applied to the injectivity screen, to the
+productivity index and to the movable volume. We report four quantities
+separately: the engineering feasibility rate, the conditional probability of
+a positive NPV given feasibility, the joint probability of feasibility and
+positive NPV, and the conditional mean and standard deviation of NPV. This
+separation matters because a candidate can be feasible but uneconomic, and
+the joint frequency is the decision-relevant number.
+
+\begin{table}[h!t]
+\centering
+\caption{Robustness of the compromise candidates under $\pm15\%$ parameter
+perturbations (200 samples).}
+\label{tbl:robust}
+\small
+\begin{tabular}{lcccc}
+\toprule[1.5pt]
+Candidate & Feasible rate & $\Pr(NPV>0\mid\text{feasible})$
+& Joint & Worst 10\% NPV\\
+\midrule[1pt]
+Case2-S1 & 0.47 & 0.00 & 0.00 & $-197$\\
+Case2-S2 & 0.48 & 0.00 & 0.00 & $-137$\\
+Case2-S3 & 0.48 & 0.00 & 0.00 & $-137$\\
+Case3-S1 & 1.00 & 1.00 & 1.00 & $+288$\\
+Case3-S2 & 1.00 & 1.00 & 1.00 & $+530$\\
+Case3-S3 & 1.00 & 1.00 & 1.00 & $+549$\\
+\bottomrule[1.5pt]
+\end{tabular}
+\end{table}
+
+The six candidates also pass a full-injection three-phase pressure check at
+nominal parameters: the estimated peak pressures are
+$50.75$--$50.76$~MPa for Case~2 (limit $57$~MPa) and
+$52.67$--$52.70$~MPa for Case~3 (limit $60$~MPa).
+
+\subsection{Discussion and Limitations}
+\label{sec:p3_limits}
+
+Three points must be stated explicitly.
+
+First, the zero-exponent convention is a modeling choice, not a physical
+finding. Attachment~C identifies the effects of $C_n$ and $t_s$ only; the
+effect of $V_{inj}$ and $f_{CO_2}$ is not identifiable from the supplied data.
+Under the convention, the optimizer minimizes cost by choosing the smallest
+injected volume and the highest CO$_2$ fraction (which reduces the aqueous
+volume and hence the nano mass), so the representative candidates cluster at
+$V_{inj}=1000$~m$^3$. This is a cost-minimization outcome and should not be
+read as an engineering recommendation.
+
+Second, the choice of exponent changes the selected point. A control run with
+the previously assumed exponents $(a,b)=(0.2,0.1)$ moves the highest-NPV
+Case~3 solution from $V_{inj}=1000$~m$^3$ to about $1668$~m$^3$. The
+production and pressure of that positive-exponent solution are not verified;
+the control is reported only to quantify the structural sensitivity.
+
+Third, Case~1 is infeasible rather than uneconomic: its injectivity limit is
+below the prescribed minimum rate, and the three additional low-rate runs
+exceed the pressure limit before the planned volume is injected. Case~2 is
+feasible but uneconomic under the baseline price, with a joint
+feasibility--profitability frequency of zero. Only Case~3 combines positive
+NPV with robust feasibility. Water production ($WOR=0.5$), the fracturing-only
+baseline B1, and three-phase perturbation robustness remain to be calibrated;
+the NPV values above are absolute values, not yet differences from B1.

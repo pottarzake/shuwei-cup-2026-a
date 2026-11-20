@@ -1,22 +1,56 @@
-% 01_introduction.tex —— 引言（骨架 T05；正文写作 11/22–11/23）
+% 01_introduction.tex —— 引言
 \section{Introduction}
 
 \subsection{Background}
-[TBD: 1--2 段。深部致密油资源现状（中国可采致密油约 178.2 亿吨，占 40%）；
-基质渗透率 $\le 0.1$ mD、采收率 <10\% 的开发困境；
-CO$_2$ + 纳米渗吸剂复合流体吞吐的三阶段过程（注入--焖井--生产）。
-引用建议：P1-03（CO2 huff-n-puff 地质力学）、P1-15（纳米--CO$_2$ 协同实验）、P2-02（实验证据）。]
+
+China's recoverable tight-oil reserves are about 17.82 billion tonnes, roughly
+40\% of its recoverable petroleum resources, and are concentrated in the Ordos,
+Junggar, Sichuan and Songliao basins. Deep tight-oil matrices typically have
+permeability below $0.1$~mD, small pore throats, and poorly connected natural
+fractures; recovery under conventional development is commonly below $10\%$.
+A composite fluid of liquid or supercritical CO$_2$ and a nano-imbibition agent
+is used for stimulation and huff-n-puff development. The operation has three
+stages: high-pressure injection and hydraulic fracturing, shut-in soaking, and
+production. Soaking is the link between stimulation and economics: a short soak
+leaves the CO$_2$ and the nano-agent confined near the fracture, while a long
+soak defers production and accumulates operating and capital-occupancy costs.
+Field and laboratory studies confirm that both the geomechanical response and
+the nano--CO$_2$ synergy matter \cite{p1-03,p1-15}, and that live-oil and
+dead-oil systems behave differently during soaking \cite{p2-02}.
 
 \subsection{Problem Statement}
-[TBD: 按题目四问各 1--2 句重述：
-P1 建立渗流--应力--损伤三场耦合方程（含假设、初始/边界条件、三阶段边界区分）；
-P2 无量纲化得控制参数群、量级、$R(t_s)$ 近似解析关系；
-P3 以 $C_n, q_{inj}, V_{inj}, f_{CO_2}, t_s, \tau_{inj}$ 为设计变量的双目标优化
-（产能 vs 总成本，含设备/纳米 30 t/承压/90 d 约束，三情景，鲁棒性 ±15\%）；
-P4 附件 C 数据建模 + 附录 B 经济评价 + NPV--焖井时间曲线 + 机理/数据对比 +
-综合评价指标体系 + 全局敏感性分析。]
 
-\subsection{Our Approach and Roadmap}
-[TBD: 一段总览 + 图 \ref{fig:roadmap}（技术路线图，T36/T37 定稿时画）。
-强调口径：全文统一一维裂缝面法向模型（P1），P2/P3/P4 全部回溯到 P1 的符号与假设；
-经济评价严格按附录 B（25 MPa、300 K 参考状态、逐日折现、B1 基准）。]
+The problem asks for four connected results. Problem~1 requires the coupled
+seepage--stress--damage equations, with assumptions, initial and boundary
+conditions, and a clear distinction between the injection, soaking and
+production stages. Problem~2 requires a dimensionless form, the controlling
+parameter groups and their magnitudes, and an approximate analytical relation
+between soak time and stimulation radius. Problem~3 is a bi-objective
+optimization over the nano concentration, injection rate, injected volume,
+CO$_2$ fraction, soak time and injection timing, subject to equipment, material,
+pressure and duration constraints, for three reservoir scenarios and under
+$\pm15\%$ parameter uncertainty. Problem~4 uses the supplied production data
+for a data-driven model, evaluates net present value with the prescribed
+economic parameters, compares the data-driven and mechanistic results, and
+performs a global sensitivity analysis.
+
+\subsection{Approach and Roadmap}
+
+We use one forward model throughout. Problem~1 is reduced to a
+one-dimensional domain normal to the fracture face, with a three-phase flow
+model, a free CO$_2$ phase, dissolved CO$_2$, nano transport with Langmuir
+adsorption, an incremental poroelastic stress field and a compressive-strain
+damage variable. Problem~2 derives the mirror-kernel pressure redistribution
+from the injection-end profile and validates it against the three-phase
+simulation. Problem~3 replaces the expensive forward model with a reduced
+production model calibrated to the training groups of the supplied data, and
+solves the bi-objective problem with NSGA-II. Problem~4 builds the grouped
+data model, applies the Appendix~B cash-flow rules exactly at the 25~MPa and
+300~K reference state, and reports Sobol sensitivities with the optimal soak
+time as an output.
+
+The same symbols and assumptions are used in all four problems. Where a
+quantity is not identifiable from the supplied data---most importantly the
+effect of injected volume and CO$_2$ fraction on production---we state the
+assumption explicitly and report a structural sensitivity rather than
+presenting it as a calibrated result.

@@ -33,3 +33,6 @@ desktop.ini
 
 # 本地环境脚本（含 API 端点与密钥读取逻辑，不共享）
 start.ps1
+
+# 论文编译产物
+04_论文/latex/main.pdf
