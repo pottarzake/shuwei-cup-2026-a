@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 T09：一维油水两相渗流，全隐式 Newton。
 

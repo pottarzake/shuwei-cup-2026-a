@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 T11：纳米颗粒在水相中的输运 + Langmuir 吸附（算子分裂）。
 

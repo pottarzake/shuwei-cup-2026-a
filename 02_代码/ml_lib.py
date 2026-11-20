@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 ml_lib.py —— numpy 手写迷你机器学习库（队友负责，2026-11-20）
 

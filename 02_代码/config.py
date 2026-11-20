@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 A 题统一参数与单位口径（T02）
 

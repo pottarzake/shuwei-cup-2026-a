@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """T11：纳米输运与 Langmuir 吸附验证。
 
 1) Case3、N_f=10、q=300、10 d 的浓度剖面与质量守恒；

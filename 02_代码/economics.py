@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 economics.py —— 附录 B 经济评价模块（队友负责，2026-11-20，T16/T17）
 

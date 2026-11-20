@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 09_frozen_test.py —— T13 模型选择与冻结测试（2026-11-20）
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """T10：三相（水/油/气）验证——注入能力、质量守恒、相分布。
 
 默认复核 0.5 天短测。--full 按 3000 m³ 参考体积检查完整注入期。

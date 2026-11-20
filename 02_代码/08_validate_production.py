@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """T21/T22：降阶生产模型标定（Case3，Cn=1，ts=30）。"""
 
 import sys

@@ -1,60 +1,46 @@
 % !TeX encoding = utf-8
-% !TeX program = pdflatex
+% !TeX program = xelatex
 % main.tex —— 数维杯 2026 A 题论文主文件（统稿：队友；只有队友可改本文件）
 % 编译：PDFLaTeX（推荐）或 XeLaTeX，连续编译两遍出目录
 % 骨架建立：2026-11-20（T05）
 
 \documentclass{swmcmthesis}
+\usepackage{iftex}
+\ifPDFTeX\else
+  \usepackage{fontspec}
+\fi
+\linespread{1.20}
+\setlength{\headheight}{20pt}
+\setcounter{tocdepth}{1}
 
 %%%%%%%%%%%%填写相关信息%%%%%%%%%%%%%%%%%%%%%%%%%%
-% TODO【提交前必须改】把报名号换成真实队号
 \title{Multi-Field Modeling and Parameter Optimization for Multi-Fluid Injection Development in Deep Unconventional Reservoirs}
 
-\baominghao{SWBMCM2600001}           %报名号，修改为自己的队号
+\baominghao{SWBMCM2603901}
 
 \zubie{A} %选题
 
-% 摘要必须是第 1 页（\maketitle 自动生成）；定稿时删除所有指导注释
-% TODO【T39 整合时填】摘要结构建议（1 页内）：
-%   1) 背景一句话 + 问题：深部非常规储层 CO2/纳米复合流体注入的焖井时间权衡
-%   2) 方法：P1 三场耦合正演器（一维法向、全隐式、固定应力分裂）；
-%      P2 镜像热核解析 R(t_s)；P3 代理+NSGA-II 多目标 + 鲁棒筛选；
-%      P4 分组数据模型 + 附录 B 严格 NPV + 嵌套 Sobol
-%   3) 数值结论：三情景最优焖井时间 t_s* = [待填] / [待填] / [待填] d；
-%      三情景 ΔNPV = [待填]；排序 Case3 > Case2 > Case1
-%   4) 敏感性主控参数 Top3 = [待填]
-\abstract{Deep tight-oil reservoirs have matrix permeability below
-0.1~mD and recovery factors commonly below 10\%, and CO$_2$ plus
-nano-imbibition huff-n-puff is used to improve them. The central trade-off
-is the soak time: a short soak confines the injected fluids near the
-fracture, while a long soak defers production and accumulates cost. We
-develop one forward model and apply it to the four problems. Problem~1
-reduces the matrix--fracture exchange to one dimension normal to the
-fracture and couples three-phase flow with a free CO$_2$ phase, dissolved
-CO$_2$, nano transport with Langmuir adsorption, incremental
-poroelasticity and compressive-strain damage; it reproduces the
-single-phase erfc solution to $1.2\times10^{-3}$, is second order in space
-and first order in time, and conserves phase mass to $10^{-10}$.
-Problem~2 derives a mirror-kernel solution for shut-in pressure
-redistribution and validates it against the three-phase simulation; the
-5\% pressure radius disappears after 3--4~d at 300~m$^3$/d and 6--8~d at
-800~m$^3$/d, so the pressure disturbance is short-lived and is not the
-source of a long-soak benefit. Problem~3 calibrates a reduced production
-model to the training groups of the supplied data and solves the
-bi-objective problem with NSGA-II. Case~1 is infeasible because its
-injectivity limit is about 15~m$^3$/d; Case~2 is feasible but uneconomic
-(NPV $-164$ to $-87\times10^4$~CNY, joint feasibility--profitability
-frequency zero); Case~3 is robustly viable (NPV $+365$ to
-$+671\times10^4$~CNY, all perturbed samples feasible and profitable).
-Problem~4 builds a grouped Gaussian-process model, applies the Appendix-B
-cash-flow rules exactly, and gives economic optima of 10, 20 and 30--40~d
-for the three scenarios at baseline operation; only Case~3 attains a
-positive NPV (up to $+284\times10^4$~CNY) with a breakeven oil price of
-64~USD/bbl. Sobol analysis attributes $Q_{360}$ mainly to soak time
-($ST=0.63$) and porosity ($ST=0.31$); for the economic optimum, Case~2 is
-controlled by injection rate and matrix permeability, while Case~3 is
-controlled by injected volume, CO$_2$ fraction and nano concentration
-($ST=0.65$, $0.62$, $0.62$).}
+\abstract{CO$_2$ and nano-imbibition huff-n-puff trades off stimulation,
+production delay and operating cost in deep tight-oil reservoirs.
+We formulate a fracture-normal model linking seepage, stress and damage,
+and verify its single-phase limit against the erfc solution. A
+mirror-kernel approximation describes shut-in pressure redistribution.
+In the Case~3 numerical tests, the 5\% pressure radius vanishes between
+days 3 and 4 at 300~m$^3$/d and between days 6 and 8 at 800~m$^3$/d.
+NSGA-II uses a production response calibrated to training groups.
+Case~1 yields no point in the pressure prescreen. The three Case~2
+candidates pass nominal pressure checks and have negative absolute NPV.
+The three Case~3 candidates pass the same checks and yield absolute
+NPV of $365$--$671$ in units of $10^4$~CNY under the reduced-order assumptions.
+A grouped Gaussian process predicts cumulative production from Attachment~C.
+At the reference operation and $C_n=0.5$~wt\%, the economic soak optima
+are 10, 20 and 40~d for Cases~1--3. A fracturing-only counterfactual gives
+$NPV_{B1}$ values of $-34$, $280$ and $916$ in units of $10^4$~CNY.
+The corresponding incremental NPVs are $-540$, $-595$ and $-632$.
+These comparisons use the same calibrated storage-length convention
+and require validation against fracturing-only production data.
+Sobol screening identifies soak time and porosity as leading
+contributors to uncertainty in cumulative production.}
 
 \keywords{multi-field coupling; CO$_2$ huff-n-puff; soak time optimization; surrogate model; NSGA-II; Sobol sensitivity}
 
@@ -62,11 +48,20 @@ controlled by injected volume, CO$_2$ fraction and nano concentration
 
 \begin{document}
 
+\ifPDFTeX\else
+  \IfFileExists{C:/WINDOWS/fonts/times.ttf}{%
+    \setmainfont[Path=C:/WINDOWS/fonts/,Extension=.ttf,BoldFont=timesbd,
+      ItalicFont=timesi,BoldItalicFont=timesbi]{times}%
+  }{\setmainfont{Times New Roman}}
+  \normalfont
+\fi
+
 \graphicspath{{figures/}}
 
 % 生成首页（摘要页）
 \maketitle
-% 页眉总页数只统计正文（不含摘要、目录、附录）
+% 页眉终页包括摘要和目录，附录单独计
+\lhead{\small Team ASWBMCM2603901}
 \rhead{Page \thepage\ of \pageref{LastMainPage}}
 % 目录
 \tableofcontents
@@ -74,7 +69,6 @@ controlled by injected volume, CO$_2$ fraction and nano concentration
 \newpage
 
 % -------------------------正文开始
-\setcounter{page}{1}
 \input{sections/01_introduction}
 \input{sections/02_assumptions_notation}
 \input{sections/03_p1_model}
@@ -87,6 +81,10 @@ controlled by injected volume, CO$_2$ fraction and nano concentration
 %----------------------------参考文献
 \input{sections/09_references}
 \label{LastMainPage}
+
+\clearpage
+\pagestyle{plain}
+\input{sections/10_ai_use_report}
 
 % ---------------------附录（推导、代码清单、补充图表）
 \newpage
@@ -133,7 +131,8 @@ CF(t)=P_{oil}^*Q_o-c_{prod}Q_o-c_{water}Q_w
 NPV=-C_{frac}+\sum_{t=1}^{T}\frac{CF(t)}{(1+r)^{t/365}},
 \qquad T=t_{inj}+t_s+360 .
 \end{equation}
-The fracturing-only baseline $B1$ uses $T=360$~d. The implementation
+The fracturing-only baseline $B1$ uses $T=360$~d.
+Run \texttt{13\_b1\_comparison.py} to reproduce the incremental NPVs. The implementation
 reproduces the worked example of the problem statement exactly:
 $300+38.25+300+90+120=848.25\times10^4$~CNY for $V_{inj}=3000$~m$^3$,
 $f_{CO_2}=0.5$, $C_n=1$~wt\%, $t_{inj}=10$~d and $t_s=30$~d.
@@ -162,11 +161,9 @@ File & Purpose\\
 \end{tabular}
 \end{table}
 
-Each model has a matching validation script in the code directory
-(\texttt{02\_validate\_single\_phase.py} through \texttt{12\_waiting.py}).
-The scripts write their results to the results directory; the paper figures
-are copied from that folder. The paper is compiled with
-\texttt{pdflatex main.tex} (two passes for the table of contents).
+Numbered scripts in the code directory write their validation results to the
+results directory, which also holds the source figures.
+Compile with \texttt{xelatex main.tex} twice to resolve cross-references.
 
 \subsection*{A.5 Supplementary sensitivity}
 

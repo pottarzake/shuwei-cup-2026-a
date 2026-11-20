@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
+# OpenAI Codex (GPT-6 family, exact release date unconfirmed) assisted review or edits on 2026-11-20.
 """
 07_npv_baseline.py —— T16 NPV 模块运行 + T17 盈亏平衡与三类亏损口径（2026-11-20）
 
@@ -131,13 +133,12 @@ def main():
       + "  (产水处理费占比小, 方向: WOR 越大 NPV 略降)")
     A("")
     A("[三类亏损口径] (T17, 分开报告不混用)")
-    A("  ① 工程不可行: 由正演器注入能力判定 —— 据 T10 诊断, Case1 在 q_inj=300 "
-      "下单缝 0.58 d 即超压(需 N_f≈205 条裂缝), Case2 支撑 6.6 d; "
-      "P3 优化中以 p_max 约束处理。")
+    A("  ① 工程不可行: T10 的 10 条等效裂缝基准注入算例中，"
+      "Case1 在 0.58 d 超压，Case2 在 6.60 d 超压。")
     neg = res[res["NPV"] < 0].groupby("case").size().to_dict()
     A(f"  ② 绝对 NPV<0 (本扫描): 各情景 NPV<0 的 (cn,ts) 组合数 = {neg}")
-    A("  ③ 相对 B1 的 ΔNPV: 需 B1(仅压裂)产量剖面 —— 附件 C 不含, "
-      "等 T22 机理产量映射后补算; 模块已留 b1_npv() 接口。")
+    A("  ③ 相对 B1 的 ΔNPV: 运行 13_b1_comparison.py，见 T17_b1_comparison.csv。"
+      "B1 使用初始压力与饱和度，以及沿用 T22 储集长度的降阶生产反事实。")
     n15 = eco.materials(5000, 0.5, 1.5)
     A(f"[P3 提示] (V_inj=5000, f=0.5, C_n=1.5): m_nano={n15['m_nano']:.1f} t "
       f"> 30 t 上限 → 该组合优化中判不可行。")

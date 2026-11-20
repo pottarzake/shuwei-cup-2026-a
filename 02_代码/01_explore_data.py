@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 import pandas as pd, numpy as np
 p = "01_数据/附件C_Synthetic_Production_Data.xlsx"
 df = pd.read_excel(p)

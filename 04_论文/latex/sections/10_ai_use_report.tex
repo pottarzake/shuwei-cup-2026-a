@@ -1,0 +1,52 @@
+\section*{AI Tool Use Report}
+\phantomsection
+\addcontentsline{toc}{section}{AI Tool Use Report}
+
+This disclosure follows the contest AI-use rules. Both tools were used on
+20 November 2026, as evidenced by the project exchanges of that date. Only
+content confirmed by the team is recorded below.
+
+\paragraph{DeepSeek (DeepSeek AI; model variant unconfirmed).}
+Documented use: 20 November 2026. At that date the vendor's production API
+served the V4 family (public release record: V4 preview, 24 April 2026;
+V4-Pro general availability, 13 August 2026; V4.1-Flash, 10 September
+2026); the exact variant answering the team's queries is not recorded.
+Representative requests: implement and check the P1--P4 simulation chain;
+write calibration, data-analysis and optimization code; fit the
+production surrogate to the training groups and rerun the optimization
+with the calibrated volume and composition responses. Adopted content: the
+corresponding scripts and selected result files in the supporting
+archive, together with generated plots and numerical outputs for pressure
+redistribution, damage, production calibration and the optimization
+runs. The modeling and programming teammates checked the key assumptions,
+formulas and scripts before adoption.
+
+\paragraph{Codex (OpenAI; GPT-6 family; exact variant unconfirmed).}
+Documented use: 20 November 2026. Public release record of the family:
+GPT-6 Astra, 3 September 2026; GPT-6 Sol and Luna, 22 September 2026;
+GPT-6.1 Sol, 29 September 2026 (default in Codex CLI from late September
+2026). Representative requests: review and repair the implementation;
+check the paper against the verification reports and contest
+requirements; prepare the submission files; write the fracturing-only B1
+comparison and the break-even storage-length calculation. Adopted content:
+reviewed code, the B1 comparison and break-even calculation (the B1
+values reported in the text are calculations from the reduced production
+proxy), manuscript edits and reference corrections, and the compiled-PDF
+and reproduction-package checks. The writing teammate rewrote the adopted
+AI-generated text during final editing.
+
+\paragraph{Human review and independent verification.}
+The core modeling, solution strategy and conclusions were completed
+independently by the team; AI outputs served as drafts and were checked
+before adoption. Recorded checks include: (i) an independent
+re-implementation of the Sobol sampling design and total-order estimator
+(\texttt{sobol\_lib.py}), validated on the Ishigami test function and by
+replication of the forward evaluation (agreement to $10^{-13}$);
+(ii) rerunning the cross-validation after the feature set was aligned
+with the model outline (CV RMSE 25.1; frozen-test MAPE 0.53\% and
+3.59\%); (iii) verifying the economic self-check against the worked
+example of the problem statement ($848.25\times10^4$~CNY reproduced
+exactly) and reproducing the B1 incremental NPVs from the packaged
+inputs; and (iv) checking every bibliography entry against the source
+documents. The B1 baseline remains a fracturing-only model
+counterfactual and still lacks independent production observations.

@@ -36,11 +36,10 @@ performs a global sensitivity analysis.
 
 \subsection{Approach and Roadmap}
 
-We use one forward model throughout. Problem~1 is reduced to a
-one-dimensional domain normal to the fracture face, with a three-phase flow
-model, a free CO$_2$ phase, dissolved CO$_2$, nano transport with Langmuir
-adsorption, an incremental poroelastic stress field and a compressive-strain
-damage variable. Problem~2 derives the mirror-kernel pressure redistribution
+The governing model uses a one-dimensional domain normal to the fracture
+and includes free and dissolved CO$_2$, nano adsorption, poroelasticity and
+compressive-strain damage. Numerical tests use an insoluble three-phase
+flow solver, split nano transport and separate local mechanics checks. Problem~2 derives the mirror-kernel pressure redistribution
 from the injection-end profile and validates it against the three-phase
 simulation. Problem~3 replaces the expensive forward model with a reduced
 production model calibrated to the training groups of the supplied data, and
@@ -54,3 +53,7 @@ quantity is not identifiable from the supplied data---most importantly the
 effect of injected volume and CO$_2$ fraction on production---we state the
 assumption explicitly and report a structural sensitivity rather than
 presenting it as a calibrated result.
+
+\noindent\textit{AI provenance.} DeepSeek and OpenAI Codex assisted the
+code, analysis and figures in P1--P4 and the sensitivity evaluation.
+See the AI Tool Use Report for tool-specific contributions \cite{deepseek,codex}.

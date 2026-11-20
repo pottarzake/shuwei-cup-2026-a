@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """一维裂缝面法向网格：近缝面几何加密。
 
 默认按相对加密 first = stretch * L / n，保证网格整体加密时

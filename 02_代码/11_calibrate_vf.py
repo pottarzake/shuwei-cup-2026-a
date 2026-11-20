@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """T31: local V/f sensitivity of the Case3 injection–soak–tank proxy."""
 
 from concurrent.futures import ProcessPoolExecutor

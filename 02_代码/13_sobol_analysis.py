@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 T35 全局敏感性分析（Sobol，Saltelli N=1024，含二阶指数）
 

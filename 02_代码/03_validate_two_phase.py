@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """T09：两相渗流验证——质量守恒、压力峰值、饱和度前缘。"""
 
 import sys

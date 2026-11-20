@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 T10：一维水/油/气三相渗流（自由 CO₂ 相），全隐式 Newton。
 

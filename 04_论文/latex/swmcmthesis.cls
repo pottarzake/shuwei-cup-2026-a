@@ -403,7 +403,6 @@
       \@restonecolfalse
     \fi
     \phantomsection
-    \addcontentsline{toc}{section}{Content}
     \centerline{\bfseries\Large\contentsname}
     \medskip
     \@mkboth{%

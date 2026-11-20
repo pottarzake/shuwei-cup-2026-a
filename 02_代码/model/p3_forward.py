@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 P3 快速评估器：数据标定的焖井/浓度维度 + 机理/假设的 V、f 缩放。
 

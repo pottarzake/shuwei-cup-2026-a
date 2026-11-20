@@ -1,5 +1,5 @@
-% 06_p4_data_econ.tex —— P4 数据模型与经济评价（队友；2026-11-20 填实际数字初稿，
-% 机理对比段留 [TBD-mech] 等 T25）
+% 06_p4_data_econ.tex —— P4 数据模型与经济评价（队友；2026-11-20 定稿，
+% 含 B1 反事实与增量 NPV）
 \section{Problem 4: Data-Driven Production Model and Economic Evaluation}
 
 \subsection{Data Partitioning and Quality Control}
@@ -89,7 +89,7 @@ less than 2\% over $WOR \in [0,2]$.
 Figure~\ref{fig:p4_npv} shows NPV versus soak time for the three scenarios
 at the baseline operation ($q_{inj}=300$ m$^3$/d, $V_{inj}=3000$ m$^3$,
 $f_{CO_2}=0.5$, $\tau_{inj}=0$). The economically optimal soak time
-(maximizing NPV) is $t_s^* = 10$ d for Case~1, 20 d for Case~2, and
+(maximizing NPV) is $t_s^* = 10$ d for Case~1, 20--25 d for Case~2, and
 30--40 d for Case~3 (35 d at $C_n=1.0$). Only Case~3 attains a positive
 absolute NPV (up to $+284\times10^4$ CNY at $C_n=0.5$, $t_s=40$ d);
 Case~1 and Case~2 remain negative at all soak levels because the 3000 m$^3$
@@ -104,8 +104,22 @@ separately, we distinguish (i) engineering infeasibility (violation of
 $p_{max}$, handled as a hard constraint in Section~5), (ii) absolute
 NPV $<0$ (all 36 Case~1 and Case~2 combinations tested, 6 of 36 in
 Case~3), and (iii) $\Delta NPV = NPV - NPV_{B1}$ against the
-fracturing-only baseline $B1$, which is reported once the mechanistic
-baseline production profile is available [TBD-mech].
+fracturing-only baseline $B1$.
+
+\paragraph{Fracturing-only counterfactual.}
+For $B1$, production starts from the initial pressure and saturations,
+with no injection or soak. We retain the fracture geometry, well-pressure
+and liquid limits, and use the tank decline with the case-specific
+storage length from the $C_n=1.0$~wt\%, $t_s=30$~d training fit.
+The same $WOR=0.5$ is used. Over 360~d, only the initial fracturing
+cost and variable production and water costs are charged.
+For Cases~1--3, respectively, $NPV_{B1}$ is $-33.58$, $280.47$ and $915.97$
+in units of $10^4$~CNY. At each case's best reference-operation combination
+(all at $C_n=0.5$~wt\%), $\Delta NPV$ is $-539.55$, $-595.40$ and $-632.45$
+in the same units. Case~3 has positive absolute NPV and negative
+incremental NPV under this storage-length assumption. Attachment~C
+contains no fracturing-only production series, so these incremental
+values depend on the counterfactual storage model. In Case~3 the incremental NPV changes sign at a B1 storage length of about 0.176~m under the same rate and cost assumptions \cite{codex}.
 
 \subsection{Mechanism--Data Comparison}
 Figure~\ref{fig:p4_overlay} overlays the frozen-GP $Q_{360}(t_s)$ curves
@@ -115,36 +129,24 @@ optimal soak time emerge, as anticipated in the master plan. The
 cumulative-production-increment curve \cite{p4-04}, which the GP curves
 place at the earliest scanned level (5~d) in all three scenarios---the
 increment decays monotonically from the start. The \emph{economic}
-viewpoint of \S6.3 instead yields interior optima (10/20/35~d), because
+viewpoint of \S6.3 instead yields interior optima (10/20/35~d at $C_n=1$~wt\%), because
 daily discounting and the soak-day fee shift the optimum to shorter
 soaks; the two definitions are both reported and their divergence is
 explained by the time-budget difference, not by physics
 \cite{p4-04, p4-05}.
 
-The residual mechanism--data discrepancies are attributed to three
-categories, each with independent evidence. (i)~\emph{Model
-assumptions:} the nano-transport module predicts an essentially zero
-nano-modification radius at the given adsorption coefficient (the
-injector-face concentration is $\sim\!10^{-5}$ wt\%, far below the
-0.01 wt\% threshold), and independently the data side assigns only
-6\% of predictive importance to $C_n$---two lines of evidence
-that within the studied range the nano effect acts through
-wettability/interfacial modification rather than swept volume; likewise,
-the damage variable is identically zero under the problem's damage
-strain (11--26$\times$ larger than the computed compressive strains),
-so the high Case~3 production must come from matrix permeability and
-natural-fracture equivalence rather than damage-enhanced permeability.
-(ii)~\emph{Numerical error:} the nano-front radius is not grid-converged
-(radius 0 at $n=50$ vs 0.15~m at $n=200$), so order-of-magnitude
-statements are used and precise radii are deferred to a convergence table.
-(iii)~\emph{Data noise:} the nominal $\pm5\%$ Gaussian noise with
-non-negative truncation produces a within-group CV of median 9.3\% and a
-$Q_{360}$ bias below 1--2\%, with zero rates only in Case~1 at late
-times; this noise level cannot explain the systematic
-mechanism--data differences, so where trends and rankings agree the
-noise is treated as negligible. [TBD-mech: the quantitative
-mechanistic-curve overlay and per-case error decomposition will be
-inserted once the T21 three-scenario forward scan is available.]
+Three effects limit the mechanism--data comparison.
+\emph{Model assumptions:} the tank model uses a fixed calibrated storage
+length in its independent Case~3 check. Its cumulative error is 5.36\% at
+55~d, and it misses the observed gain from 30 to 55~d. Local damage tests
+at prescribed pressure histories yield $d=0$ at the nominal thresholds.
+\emph{Numerical error:} at the 0.01~wt\% threshold the calculated nano
+radius changes from zero with 50 cells to 0.15~m with 200 cells in the
+Case~3 injection test. The radius remains grid-dependent.
+\emph{Data noise:} Attachment~C contains synthetic daily variability.
+The within-group rate CV also includes the production decline, so the
+decline and noise are treated separately when interpreting the residuals.
+Figure~\ref{fig:p4_overlay} compares the frozen data model with Attachment~C.
 
 \begin{figure}[h!t]
 \centering

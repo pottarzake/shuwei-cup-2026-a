@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """T06/T07：单相扩散校验、网格与时间收敛、域长敏感性。
 
 关键结论（见输出）：

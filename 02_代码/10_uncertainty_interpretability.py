@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 10_uncertainty_interpretability.py —— T14 预测不确定性 + T15 可解释性（2026-11-20）
 

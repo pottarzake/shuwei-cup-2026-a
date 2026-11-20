@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """T23：等待期 τ_inj 对缝宽、导流与 NPV 的影响，并分离折现与闭合两条路径。"""
 
 import sys

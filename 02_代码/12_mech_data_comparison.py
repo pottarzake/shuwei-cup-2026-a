@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 12_mech_data_comparison.py —— T25 机理 vs 数据对比：数据侧 + 归因（2026-11-20）
 

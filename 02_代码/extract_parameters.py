@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
+# OpenAI Codex (GPT-6 family, exact release date unconfirmed) assisted review or edits on 2026-11-20.
+from pathlib import Path
+
 import pdfplumber, json, re
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from openpyxl.utils import get_column_letter
 
-PDF = r"C:/Users/Lenovo/Desktop/A题_2026数维杯/00_题目与规范/A题_原题.pdf"
-OUT = r"C:/Users/Lenovo/Desktop/A题_2026数维杯/01_数据/A题参数表_整理.xlsx"
+BASE = Path(__file__).resolve().parents[1]
+PDF = BASE / "00_题目与规范" / "A题_原题.pdf"
+OUT = BASE / "01_数据" / "A题参数表_整理.xlsx"
 
 param, econ = [], []
 with pdfplumber.open(PDF) as pdf:

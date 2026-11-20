@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 11_indicator_system.py —— T26 储层改造效果综合评价指标体系（2026-11-20）
 

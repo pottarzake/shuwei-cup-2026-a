@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 T22 后续：从附件 C 反演 (case, Cn, ts) 维度的降阶生产参数。
 

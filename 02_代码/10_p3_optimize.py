@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """P3：三情景 NSGA-II 多目标优化 + 鲁棒性。
 
 目标：max Q_o，min C_total。约束：p_max（q<=q_max）、纳米<=30 t、

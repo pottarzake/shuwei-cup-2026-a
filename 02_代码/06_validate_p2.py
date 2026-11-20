@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """T08: compare the three-phase shut-in calculation with two diffusion models."""
 
 import argparse

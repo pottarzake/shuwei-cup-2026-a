@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """T18/T19：一维孔隙弹性应变与压缩损伤量级校验。
 
 结论用于判断：题给损伤阈值（0.002–0.010）在三情景的实际压力变化下

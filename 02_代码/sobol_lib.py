@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 Sobol 全局敏感性分析库（T35 前置，纯 numpy 手写，替代 SALib）。
 

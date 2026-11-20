@@ -78,12 +78,14 @@ instantaneous equilibrium,
 \end{equation}
 and the component conservation equation reads
 \begin{equation}
-\frac{\partial}{\partial t}\left[\phi\left(S_w\rho_w\omega_w
+\begin{aligned}
+&\frac{\partial}{\partial t}\left[\phi\left(S_w\rho_w\omega_w
 +S_o\rho_o\omega_o\right)\right]
 +\nabla\cdot\left(\rho_w\omega_w\mathbf v_w
-+\rho_o\omega_o\mathbf v_o\right)
--\nabla\cdot\left(\phi S_w\rho_wD_{CO_2,w}\nabla\omega_w
++\rho_o\omega_o\mathbf v_o\right)\\
+&\quad-\nabla\cdot\left(\phi S_w\rho_wD_{CO_2,w}\nabla\omega_w
 +\phi S_o\rho_oD_{CO_2,o}\nabla\omega_o\right)=q_{CO_2}.
+\end{aligned}
 \label{eq:co2}
 \end{equation}
 Dissolution modifies oil density and viscosity:
@@ -197,15 +199,12 @@ monitored; a scheme is feasible only if $\max_t p_{inj}(t)\le p_{\max}$.
 
 \subsection{Numerical Implementation}
 
-The equations are discretized by a finite-volume method on a geometrically
-graded grid (400 cells; first cell $0.5L/n$). Time integration uses backward
-Euler with adaptive step halving when a Newton iteration fails. Flow and
-mechanics are coupled by a fixed-stress split, which is unconditionally stable
-for poromechanical problems \cite{p1-09}. The Jacobian is assembled from local
-finite differences of the cell residuals; because each residual depends only on
-three neighbouring cells, the cost is linear in the number of cells. Saturation
-and pressure are clipped to physical bounds, and the damage update is
-under-relaxed with a bounded increment.
+The flow tests use a graded finite-volume grid and backward Euler with
+adaptive step halving on Newton failure. The Jacobian is assembled by local
+finite differences and trial states respect saturation and pressure bounds.
+Nano transport uses a separate conservative update. Incremental mechanics
+and irreversible damage are checked locally. A fully coupled
+fixed-stress implementation \cite{p1-09} remains a model extension.
 
 \subsection{Verification}
 
@@ -214,19 +213,19 @@ under-relaxed with a bounded increment.
 \caption{Verification summary of the forward model.}
 \label{tbl:verification}
 \small
-\begin{tabular}{lll}
+\begin{tabular}{p{.29\linewidth}p{.27\linewidth}p{.34\linewidth}}
 \toprule[1.5pt]
 Check & Setting & Result\\
 \midrule[1pt]
 Single-phase vs.\ erfc & $t=1/5/10$~d & relative $L_2$ error
-$1.16/0.20/0.09\times10^{-3}$\\
+$(1.16,0.195,0.088)\times10^{-4}$\\
 Spatial order & $n=100\to800$ & observed order $2.00$\\
 Temporal order & $\Delta t=10^{-2}\to5\times10^{-4}$~d & observed order
 $1.02$--$1.10$\\
-Two-phase mass balance & 360~d & water $2.5\times10^{-11}$, oil
+Two-phase mass balance & 0.20~d injection & water $2.5\times10^{-11}$, oil
 $4.1\times10^{-11}$\\
-Three-phase mass balance & injection + soak & $10^{-10}$--$10^{-13}$\\
-Damage checks & loading--unloading, grid/time refinement & $d$ non-decreasing,
+Three-phase mass balance & Case~3, 10~d injection & water $9.57\times10^{-9}$, oil $1.09\times10^{-8}$, CO$_2$ $2.58\times10^{-5}$\\
+Damage checks & local loading--unloading & $d$ non-decreasing,
 properties positive\\
 \bottomrule[1.5pt]
 \end{tabular}
@@ -234,8 +233,8 @@ properties positive\\
 
 Figure~\ref{fig:p1_erfc} compares the numerical pressure profile with the
 erfc solution, and Figure~\ref{fig:p1_profiles} shows the three-phase profiles
-at the end of injection for the three scenarios. The numerical core is
-therefore verified before it is used in Problems~2--4.
+at the injection stopping time. Cases~1 and 2 stop at their first pressure
+limit exceedance. Case~3 completes the planned 10~d injection.
 
 \begin{figure}[h!t]
 \centering
@@ -247,8 +246,8 @@ therefore verified before it is used in Problems~2--4.
 \begin{figure}[h!t]
 \centering
 \includegraphics[width=0.75\textwidth]{p1_profiles}
-\caption{Pressure and gas-saturation profiles at the end of injection for the
-three scenarios ($N_f=10$, $q_{inj}=300$~m$^3$/d).}
+\caption{Pressure and gas-saturation profiles at the injection stopping time
+($N_f=10$, $q_{inj}=300$~m$^3$/d). The Case~1--3 times are 0.580, 6.595 and 10.000~d.}
 \label{fig:p1_profiles}
 \end{figure}
 
@@ -258,8 +257,7 @@ three scenarios ($N_f=10$, $q_{inj}=300$~m$^3$/d).}
 The one-dimensional reduction neglects pressure loss along the fracture and
 lateral gradients between fractures. Natural fractures in Case~3 are represented
 by an equivalent permeability rather than a dual-porosity model. The free CO$_2$
-phase is treated as insoluble in the flow runs used for the injectivity screen;
-dissolution is included in the transport equations but is not coupled back to
-the phase mobilities in those runs. These limitations are acceptable for the
-scaling analysis of Problem~2 and are revisited in Problem~3, where the reduced
-production model is calibrated to the supplied data.
+phase is treated as insoluble in the injectivity screen. The governing model
+specifies dissolved CO$_2$ transport and its effects on oil properties.
+The numerical experiments use the reduced flow implementation, and
+Problem~3 calibrates the production response to the training data.

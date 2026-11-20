@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """紧凑 NSGA-II（无 pymoo 依赖）。目标按最小化处理，约束用 violation。"""
 
 import numpy as np

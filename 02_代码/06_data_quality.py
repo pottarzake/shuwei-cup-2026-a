@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# The team reports DeepSeek (DeepSeek, model variant and release date unconfirmed) assisted the project code.
 """
 06_data_quality.py —— T04 数据质量与噪声分析（2026-11-20）
 
