@@ -1,0 +1,7 @@
+q_inj = 300 m3/d, fg_inj = 0.5, L = 40 m, n = 100, t_end = 0.5 d
+Case1: t_stop=0.015 d, p_max exceeded at 0.015 d, p0=61.93 MPa (limit 60.0), Sg_max=0.016, Sw0=0.234, mass_rel=6.15e-13
+Case2: t_stop=0.065 d, p_max exceeded at 0.065 d, p0=57.33 MPa (limit 57.0), Sg_max=0.037, Sw0=0.295, mass_rel=1.10e-10
+Case3: t_stop=0.500 d, feasible to 0.5 d, p0=59.77 MPa (limit 60.0), Sg_max=0.063, Sw0=0.434, mass_rel=1.01e-10
+
+结论：q=300 m3/d 在 Case3 接近可行性边界，Case1/Case2 明显超压；P3 的压力约束会绑定量，低渗情景必须降 q_inj。
+两相对照：油水两相可行 q 仅 8.55 m3/d，三相提高到约 300 m3/d 量级。
