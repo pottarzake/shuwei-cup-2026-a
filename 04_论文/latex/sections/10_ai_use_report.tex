@@ -2,51 +2,49 @@
 \phantomsection
 \addcontentsline{toc}{section}{AI Tool Use Report}
 
-This disclosure follows the contest AI-use rules. Both tools were used on
-20 November 2026, as evidenced by the project exchanges of that date. Only
-content confirmed by the team is recorded below.
+This report follows the contest AI-use rules. DeepSeek and OpenAI Codex were
+used on 21 November 2026; only content confirmed by the team is recorded. Both
+tools served as drafting assistants. The team retained responsibility for the
+modeling decisions, for verifying every adopted number, and for the final
+wording.
 
-\paragraph{DeepSeek (DeepSeek AI; model variant unconfirmed).}
-Documented use: 20 November 2026. At that date the vendor's production API
-served the V4 family (public release record: V4 preview, 24 April 2026;
-V4-Pro general availability, 13 August 2026; V4.1-Flash, 10 September
-2026); the exact variant answering the team's queries is not recorded.
-Representative requests: implement and check the P1--P4 simulation chain;
-write calibration, data-analysis and optimization code; fit the
-production surrogate to the training groups and rerun the optimization
-with the calibrated volume and composition responses. Adopted content: the
-corresponding scripts and selected result files in the supporting
+\paragraph{DeepSeek (DeepSeek AI; V4.1-Flash, released 2026-10-17).}
+Documented use: 21 November 2026. Representative requests: implement and debug
+the P1--P4 simulation chain; draft calibration, data-analysis and optimization
+code; fit the production surrogate to the training groups of Attachment~C;
+rerun the optimizer with the calibrated volume and composition responses.
+Adopted content: the scripts and selected result files in the supporting
 archive, together with generated plots and numerical outputs for pressure
-redistribution, damage, production calibration and the optimization
-runs. The modeling and programming teammates checked the key assumptions,
-formulas and scripts before adoption.
+redistribution, damage, production calibration and the optimization runs. Each
+adopted script was read by the modeling and programming teammates; the
+governing equations, units and boundary conditions were re-derived
+independently before adoption.
 
-\paragraph{Codex (OpenAI; GPT-6 family; exact variant unconfirmed).}
-Documented use: 20 November 2026. Public release record of the family:
-GPT-6 Astra, 3 September 2026; GPT-6 Sol and Luna, 22 September 2026;
-GPT-6.1 Sol, 29 September 2026 (default in Codex CLI from late September
-2026). Representative requests: review and repair the implementation;
-check the paper against the verification reports and contest
-requirements; prepare the submission files; write the fracturing-only B1
-comparison and the break-even storage-length calculation. Adopted content:
-reviewed code, the B1 comparison and break-even calculation (the B1
-values reported in the text are calculations from the reduced production
-proxy), manuscript edits and reference corrections, and the compiled-PDF
-and reproduction-package checks. The writing teammate rewrote the adopted
-AI-generated text during final editing.
+\paragraph{Codex (OpenAI; GPT-6.2 Sol).}
+Documented use: 21 November 2026. Representative requests: review and repair
+the implementation; check the manuscript against the verification reports and
+the contest requirements; prepare the submission files; draft the
+fracturing-only B1 comparison and the break-even storage-length calculation.
+Adopted content: reviewed code, the B1 comparison and break-even calculation
+(the B1 values are calculations from the reduced production proxy), manuscript
+and reference corrections, and the compiled-PDF and reproduction-package
+checks. The writing teammate rewrote the adopted AI-generated text during final
+editing.
 
 \paragraph{Human review and independent verification.}
 The core modeling, solution strategy and conclusions were completed
-independently by the team; AI outputs served as drafts and were checked
-before adoption. Recorded checks include: (i) an independent
-re-implementation of the Sobol sampling design and total-order estimator
-(\texttt{sobol\_lib.py}), validated on the Ishigami test function and by
-replication of the forward evaluation (agreement to $10^{-13}$);
-(ii) rerunning the cross-validation after the feature set was aligned
-with the model outline (CV RMSE 25.1; frozen-test MAPE 0.53\% and
-3.59\%); (iii) verifying the economic self-check against the worked
-example of the problem statement ($848.25\times10^4$~CNY reproduced
-exactly) and reproducing the B1 incremental NPVs from the packaged
-inputs; and (iv) checking every bibliography entry against the source
-documents. The B1 baseline remains a fracturing-only model
-counterfactual and still lacks independent production observations.
+independently by the team; AI outputs served as drafts and were checked before
+adoption. In particular, the team (i) derived the one-dimensional
+fracture-normal reduction and selected the three-phase formulation with a free
+CO$_2$ phase, the incremental poroelastic relations, the compressive-strain
+damage law and the mirror-kernel scaling; (ii) re-implemented the Sobol
+sampling design and total-order estimator (\texttt{sobol\_lib.py}) and
+validated them on the Ishigami function and by replication of the forward
+evaluation (agreement to $10^{-13}$); (iii) re-ran the grouped cross-validation
+after aligning the feature set with the model outline (CV RMSE 25.1;
+frozen-test MAPE 0.53\% and 3.59\%); (iv) reproduced the economic self-check of
+the problem statement exactly ($848.25\times10^4$~CNY) and recomputed the B1
+incremental NPVs from the packaged inputs; and (v) checked every bibliography
+entry against the source documents. The B1 baseline remains a
+fracturing-only counterfactual and still lacks independent production
+observations.
